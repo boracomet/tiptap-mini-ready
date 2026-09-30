@@ -397,7 +397,7 @@ const BlockGutter = ({
     const onPointerDown = (event: MouseEvent) => {
       const target = event.target
       if (!(target instanceof Element)) return
-      if (target.closest("[data-move-menu], [data-drag-handle]")) return
+      if (target.closest("[data-move-menu], [data-notion-grip]")) return
       setMoveMenu(null)
     }
     document.addEventListener("mousedown", onPointerDown)
@@ -469,7 +469,7 @@ const BlockGutter = ({
       ref={setElement}
       data-notion-gutter
       aria-label="Block controls"
-      className="text-muted-foreground z-30 flex items-center"
+      className="text-muted-foreground z-30 flex items-start"
       style={{ visibility: "hidden", position: "absolute" }}
     >
       <button
@@ -495,15 +495,15 @@ const BlockGutter = ({
       >
         <Plus className="size-4" />
       </button>
-      <button
-        type="button"
-        data-drag-handle
+      <div
+        role="button"
+        tabIndex={0}
+        data-notion-grip
         aria-haspopup="menu"
         aria-expanded={moveMenu ? true : undefined}
         aria-label="Drag to move, or open Move up and Move down"
         title="Drag to move. Click for Move up and Move down."
         className="hover:bg-accent hover:text-accent-foreground flex size-6 cursor-grab items-center justify-center rounded active:cursor-grabbing"
-        draggable={false}
         onMouseDown={(event) => {
           pointerRef.current = { x: event.clientX, y: event.clientY }
         }}
@@ -516,9 +516,16 @@ const BlockGutter = ({
           const rect = element.getBoundingClientRect()
           setMoveMenu({ top: rect.bottom + 4, left: rect.left })
         }}
+        onKeyDown={(event) => {
+          if (event.key !== "Enter" && event.key !== " ") return
+          event.preventDefault()
+          if (!element) return
+          const rect = element.getBoundingClientRect()
+          setMoveMenu({ top: rect.bottom + 4, left: rect.left })
+        }}
       >
-        <GripVertical className="size-4" />
-      </button>
+        <GripVertical className="pointer-events-none size-4" />
+      </div>
       {moveMenuNode}
     </div>
   )
@@ -794,12 +801,12 @@ export const NotionLikeEditor = () => {
 
         const target = topLevelFromPoint(view, event.clientX, event.clientY)
         const sourceNode = view.state.doc.nodeAt(source.pos)
-        if (!target || !sourceNode) return true
+        if (!target || !sourceNode) return false
 
         const rect = target.dom.getBoundingClientRect()
         const placeAfter = event.clientY > rect.top + rect.height / 2
         let insertAt = placeAfter ? target.pos + target.size : target.pos
-        if (insertAt >= source.pos && insertAt <= source.pos + sourceNode.nodeSize) return true
+        if (insertAt >= source.pos && insertAt <= source.pos + sourceNode.nodeSize) return false
 
         const tr = view.state.tr
         if (insertAt < source.pos) {
