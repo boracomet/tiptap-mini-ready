@@ -216,6 +216,27 @@ export const Image = TiptapImage.extend<CustomImageOptions>({
       fileName: {
         default: null,
       },
+      align: {
+        default: "center",
+        parseHTML: (element) => {
+          const value = element.getAttribute("data-align")
+          if (value === "left" || value === "right" || value === "center") {
+            return value
+          }
+          return "center"
+        },
+        renderHTML: (attributes) => {
+          const align =
+            attributes.align === "left" || attributes.align === "right"
+              ? attributes.align
+              : "center"
+
+          return {
+            "data-align": align,
+            class: `image-align-${align}`,
+          }
+        },
+      },
     }
   },
 

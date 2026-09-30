@@ -5,7 +5,10 @@ import type { Editor } from "@tiptap/react"
 import { EditorContent, useEditor } from "@tiptap/react"
 import { BubbleMenu } from "@tiptap/react/menus"
 import { StarterKit } from "@tiptap/starter-kit"
+import { TaskItem, TaskList } from "@tiptap/extension-list"
 import { Placeholder } from "@tiptap/extensions"
+import { Image } from "@/components/minimal-tiptap/extensions/image"
+import { MeasuredContainer } from "@/components/minimal-tiptap/components/measured-container"
 import {
   FontBoldIcon,
   FontItalicIcon,
@@ -33,6 +36,10 @@ const slashItems: SlashItem[] = [
   {
     label: "List",
     run: (editor) => editor.chain().focus().toggleBulletList().run(),
+  },
+  {
+    label: "Todo",
+    run: (editor) => editor.chain().focus().toggleTaskList().run(),
   },
   {
     label: "Quote",
@@ -67,8 +74,182 @@ const slashMatch = (editor: Editor): SlashMatch | null => {
   }
 }
 
-const seed =
-  "<p>Heidi keeps meadow notes here. Select this sentence for the floating toolbar, or type / for a block.</p>"
+const seed = {
+  type: "doc",
+  content: [
+    {
+      type: "heading",
+      attrs: { level: 1 },
+      content: [{ type: "text", text: "Meadow notes" }],
+    },
+    {
+      type: "paragraph",
+      content: [
+        {
+          type: "text",
+          text: "Heidi's working copy. The Alps keep editing themselves. Select any sentence for the floating toolbar.",
+        },
+      ],
+    },
+    {
+      type: "heading",
+      attrs: { level: 2 },
+      content: [{ type: "text", text: "This morning" }],
+    },
+    {
+      type: "paragraph",
+      content: [
+        {
+          type: "text",
+          text: "The meadow opened on time. The goats called a meeting before breakfast and voted the wildflowers non-essential.",
+        },
+      ],
+    },
+    {
+      type: "bulletList",
+      content: [
+        {
+          type: "listItem",
+          content: [
+            {
+              type: "paragraph",
+              content: [{ type: "text", text: "Pack the thermos. The story gets wholesome fast." }],
+            },
+            {
+              type: "bulletList",
+              content: [
+                {
+                  type: "listItem",
+                  content: [
+                    {
+                      type: "paragraph",
+                      content: [{ type: "text", text: "Coffee counts. Yodeling does not." }],
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
+        },
+        {
+          type: "listItem",
+          content: [
+            {
+              type: "paragraph",
+              content: [{ type: "text", text: "Do not negotiate with the horns." }],
+            },
+          ],
+        },
+      ],
+    },
+    {
+      type: "heading",
+      attrs: { level: 2 },
+      content: [{ type: "text", text: "Still open" }],
+    },
+    {
+      type: "taskList",
+      content: [
+        {
+          type: "taskItem",
+          attrs: { checked: true },
+          content: [
+            {
+              type: "paragraph",
+              content: [{ type: "text", text: "Admire the flag. It is a square on purpose." }],
+            },
+          ],
+        },
+        {
+          type: "taskItem",
+          attrs: { checked: false },
+          content: [
+            {
+              type: "paragraph",
+              content: [{ type: "text", text: "Ask the echo to stop repeating the meeting notes." }],
+            },
+          ],
+        },
+        {
+          type: "taskItem",
+          attrs: { checked: false },
+          content: [
+            {
+              type: "paragraph",
+              content: [{ type: "text", text: "Write Spyri a thank-you. The Alps will not." }],
+            },
+          ],
+        },
+      ],
+    },
+    {
+      type: "blockquote",
+      content: [
+        {
+          type: "paragraph",
+          content: [
+            {
+              type: "text",
+              text: "If you yodel, the echo yodels back. That is acoustics, not a collaborator.",
+            },
+          ],
+        },
+      ],
+    },
+    {
+      type: "heading",
+      attrs: { level: 3 },
+      content: [{ type: "text", text: "Field snippet" }],
+    },
+    {
+      type: "codeBlock",
+      content: [
+        {
+          type: "text",
+          text: "if (goat.votes > heidi.votes) {\n  bringCheese()\n}",
+        },
+      ],
+    },
+    {
+      type: "image",
+      attrs: {
+        src: "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f3/Flag_of_Switzerland.svg/330px-Flag_of_Switzerland.svg.png",
+        alt: "Flag of Switzerland",
+        title: "Swiss flag",
+        align: "left",
+        width: 120,
+      },
+    },
+    {
+      type: "paragraph",
+      content: [
+        {
+          type: "text",
+          text: "The cross has opinions about rectangles. Heidi has opinions about goats.",
+        },
+      ],
+    },
+    {
+      type: "image",
+      attrs: {
+        src: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/60/Matterhorn_from_Domh%C3%BCtte_-_2.jpg/960px-Matterhorn_from_Domh%C3%BCtte_-_2.jpg",
+        alt: "The Matterhorn above a blue sky",
+        title: "Matterhorn",
+        align: "center",
+        width: 520,
+      },
+    },
+    {
+      type: "paragraph",
+      content: [
+        {
+          type: "text",
+          text: "End of today's page. Tomorrow the mountain will pretend this was its idea.",
+        },
+      ],
+    },
+  ],
+}
 
 export const NotionLikeEditor = () => {
   const [match, setMatch] = React.useState<SlashMatch | null>(null)
@@ -111,8 +292,17 @@ export const NotionLikeEditor = () => {
         blockquote: { HTMLAttributes: { class: "block-node" } },
         paragraph: { HTMLAttributes: { class: "text-node" } },
       }),
+      TaskList.configure({
+        HTMLAttributes: { class: "task-list-node" },
+      }),
+      TaskItem.configure({ nested: true }),
+      Image.configure({
+        allowedMimeTypes: ["image/*"],
+        maxFileSize: 5 * 1024 * 1024,
+        allowBase64: false,
+      }),
       Placeholder.configure({
-        placeholder: "Type / to insert a block…",
+        placeholder: "Type `/` for commands…",
       }),
     ],
     []
@@ -182,7 +372,11 @@ export const NotionLikeEditor = () => {
   if (!editor) return null
 
   return (
-    <div className="border-input relative flex min-h-56 w-full flex-col rounded-xl border shadow-xs">
+    <MeasuredContainer
+      as="div"
+      name="editor"
+      className="border-input relative flex min-h-56 w-full flex-col rounded-xl border shadow-xs"
+    >
       <EditorContent editor={editor} className="minimal-tiptap-editor" />
       <BubbleMenu
         editor={editor}
@@ -244,6 +438,6 @@ export const NotionLikeEditor = () => {
           ))}
         </div>
       ) : null}
-    </div>
+    </MeasuredContainer>
   )
 }

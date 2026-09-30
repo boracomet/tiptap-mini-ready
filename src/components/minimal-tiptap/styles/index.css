@@ -103,6 +103,31 @@
   @apply z-0 outline-0;
 }
 
+.minimal-tiptap-editor .ProseMirror [data-align] {
+  width: fit-content;
+  max-width: 100%;
+}
+
+.minimal-tiptap-editor .ProseMirror [data-align="left"] {
+  align-self: flex-start;
+  float: left;
+  margin: 0.25rem 1rem 0.75rem 0;
+}
+
+.minimal-tiptap-editor .ProseMirror [data-align="center"] {
+  align-self: center;
+  float: none;
+  clear: both;
+  margin-right: auto;
+  margin-left: auto;
+}
+
+.minimal-tiptap-editor .ProseMirror [data-align="right"] {
+  align-self: flex-end;
+  float: right;
+  margin: 0.25rem 0 0.75rem 1rem;
+}
+
 .minimal-tiptap-editor .ProseMirror > div.editor {
   @apply block flex-1 whitespace-pre-wrap;
 }

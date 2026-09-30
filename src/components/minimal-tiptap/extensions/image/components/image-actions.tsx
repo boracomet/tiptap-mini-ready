@@ -18,11 +18,18 @@ import {
   DownloadIcon,
   Link2Icon,
   SizeIcon,
+  TextAlignCenterIcon,
+  TextAlignLeftIcon,
+  TextAlignRightIcon,
 } from "@radix-ui/react-icons"
+
+export type ImageAlign = "left" | "center" | "right"
 
 interface ImageActionsProps {
   shouldMerge?: boolean
   isLink?: boolean
+  align?: ImageAlign
+  onAlign?: (align: ImageAlign) => void
   onView?: () => void
   onDownload?: () => void
   onCopy?: () => void
@@ -110,9 +117,21 @@ const ActionItems: Array<{
   },
 ]
 
+const alignOptions: Array<{
+  value: ImageAlign
+  icon: React.ReactNode
+  tooltip: string
+}> = [
+  { value: "left", icon: <TextAlignLeftIcon />, tooltip: "Align left" },
+  { value: "center", icon: <TextAlignCenterIcon />, tooltip: "Align center" },
+  { value: "right", icon: <TextAlignRightIcon />, tooltip: "Align right" },
+]
+
 export const ImageActions: React.FC<ImageActionsProps> = ({
   shouldMerge = false,
   isLink = false,
+  align = "center",
+  onAlign,
   ...actions
 }) => {
   const [isOpen, setIsOpen] = React.useState(false)
@@ -133,6 +152,21 @@ export const ImageActions: React.FC<ImageActionsProps> = ({
 
   return (
     <ActionWrapper className={cn({ "opacity-100": isOpen })}>
+      {alignOptions.map(({ value, icon, tooltip }) => (
+        <ActionButton
+          key={value}
+          icon={icon}
+          tooltip={tooltip}
+          aria-label={tooltip}
+          aria-pressed={align === value}
+          className={cn(align === value && "bg-accent text-foreground")}
+          onClick={(event) => {
+            event.preventDefault()
+            event.stopPropagation()
+            onAlign?.(value)
+          }}
+        />
+      ))}
       {shouldMerge ? (
         <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
           <DropdownMenuTrigger asChild>

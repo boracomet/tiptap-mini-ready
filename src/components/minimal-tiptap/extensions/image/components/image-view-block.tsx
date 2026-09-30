@@ -112,6 +112,10 @@ export const ImageViewBlock: React.FC<NodeViewProps> = ({
   })
 
   const shouldMerge = React.useMemo(() => currentWidth <= 180, [currentWidth])
+  const align =
+    node.attrs.align === "left" || node.attrs.align === "right"
+      ? node.attrs.align
+      : "center"
 
   const handleImageLoad = React.useCallback(
     (ev: React.SyntheticEvent<HTMLImageElement>) => {
@@ -217,7 +221,11 @@ export const ImageViewBlock: React.FC<NodeViewProps> = ({
     <NodeViewWrapper
       ref={containerRef}
       data-drag-handle
-      className="relative text-center leading-none"
+      data-align={align}
+      className={cn(
+        "image-align relative leading-none",
+        align === "center" && "text-center"
+      )}
     >
       <div
         className="group/node-image relative mx-auto rounded-md object-contain"
@@ -325,6 +333,8 @@ export const ImageViewBlock: React.FC<NodeViewProps> = ({
               <ImageActions
                 shouldMerge={shouldMerge}
                 isLink={isLink}
+                align={align}
+                onAlign={(next) => updateAttributes({ align: next })}
                 onView={onView}
                 onDownload={onDownload}
                 onCopy={onCopy}

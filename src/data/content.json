@@ -4,9 +4,7 @@
     {
       "type": "heading",
       "attrs": { "level": 1 },
-      "content": [
-        { "type": "text", "text": "Heidi Negotiates With the Alps" }
-      ]
+      "content": [{ "type": "text", "text": "Heidi Negotiates With the Alps" }]
     },
     {
       "type": "paragraph",
@@ -30,9 +28,26 @@
           ],
           "text": "Switzerland"
         },
+        { "type": "text", "text": "." }
+      ]
+    },
+    {
+      "type": "image",
+      "attrs": {
+        "src": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f3/Flag_of_Switzerland.svg/330px-Flag_of_Switzerland.svg.png",
+        "alt": "The flag of Switzerland, a white cross on a red square",
+        "title": "Swiss flag",
+        "align": "left",
+        "width": 140,
+        "fileName": null
+      }
+    },
+    {
+      "type": "paragraph",
+      "content": [
         {
           "type": "text",
-          "text": "."
+          "text": "The flag is a square on purpose. Heidi tried a rectangle once. The cross filed a complaint, and the mountains sided with the cross."
         }
       ]
     },
@@ -47,11 +62,61 @@
       ]
     },
     {
+      "type": "heading",
+      "attrs": { "level": 2 },
+      "content": [{ "type": "text", "text": "The person who wrote the meadow down" }]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        {
+          "type": "text",
+          "text": "Johanna Spyri put Heidi on the page. The Alps have been insufferable about it ever since, which is their most reliable personality trait."
+        }
+      ]
+    },
+    {
       "type": "image",
       "attrs": {
-        "src": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/60/Matterhorn_from_Domh%C3%BCtte_-_2.jpg/960px-Matterhorn_from_Domh%C3%BCtte_-_2.jpg",
-        "alt": "The Matterhorn, looking as if it practiced this pose",
-        "title": "Matterhorn",
+        "src": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5d/Johanna_Spyri_21j%C3%A4hrig_2.jpg/960px-Johanna_Spyri_21j%C3%A4hrig_2.jpg",
+        "alt": "Portrait of Johanna Spyri, who wrote Heidi",
+        "title": "Johanna Spyri",
+        "align": "right",
+        "width": 280,
+        "fileName": null
+      }
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        {
+          "type": "text",
+          "text": "Spyri did the difficult part: she made fresh air sound like a plot. Heidi still clocks in. The wildflowers do not."
+        }
+      ]
+    },
+    {
+      "type": "heading",
+      "attrs": { "level": 2 },
+      "content": [{ "type": "text", "text": "Maienfeld, unofficial headquarters" }]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        {
+          "type": "text",
+          "text": "Down in Maienfeld the Heidi fountain keeps the village's version of the story. The water is cold. The legend is not."
+        }
+      ]
+    },
+    {
+      "type": "image",
+      "attrs": {
+        "src": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/88/Heidibrunnen_in_Maienfeld_01.jpg/960px-Heidibrunnen_in_Maienfeld_01.jpg",
+        "alt": "The Heidi fountain in Maienfeld",
+        "title": "Heidibrunnen, Maienfeld",
+        "align": "center",
+        "width": 640,
         "fileName": null
       }
     },
@@ -70,6 +135,17 @@
       ]
     },
     {
+      "type": "image",
+      "attrs": {
+        "src": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/60/Matterhorn_from_Domh%C3%BCtte_-_2.jpg/960px-Matterhorn_from_Domh%C3%BCtte_-_2.jpg",
+        "alt": "The Matterhorn, looking as if it practiced this pose",
+        "title": "Matterhorn",
+        "align": "center",
+        "width": 720,
+        "fileName": null
+      }
+    },
+    {
       "type": "bulletList",
       "content": [
         {
@@ -78,15 +154,8 @@
             {
               "type": "paragraph",
               "content": [
-                {
-                  "type": "text",
-                  "marks": [{ "type": "bold" }],
-                  "text": "Matterhorn"
-                },
-                {
-                  "type": "text",
-                  "text": " — the mountain that refuses to sit up straight, and knows it."
-                }
+                { "type": "text", "marks": [{ "type": "bold" }], "text": "Matterhorn" },
+                { "type": "text", "text": " — the mountain that refuses to sit up straight, and knows it." }
               ]
             }
           ]
@@ -97,10 +166,7 @@
             {
               "type": "paragraph",
               "content": [
-                {
-                  "type": "text",
-                  "text": "A meadow with a job description. Heidi clocks in. The wildflowers do not."
-                }
+                { "type": "text", "text": "A meadow with a job description. Heidi clocks in. The wildflowers do not." }
               ]
             }
           ]
@@ -111,10 +177,7 @@
             {
               "type": "paragraph",
               "content": [
-                {
-                  "type": "text",
-                  "text": "One thermos. Even a wholesome Alpine story eventually needs coffee."
-                }
+                { "type": "text", "text": "One thermos. Even a wholesome Alpine story eventually needs coffee." }
               ]
             }
           ]
@@ -127,22 +190,13 @@
         {
           "type": "paragraph",
           "content": [
-            {
-              "type": "text",
-              "marks": [{ "type": "bold" }],
-              "text": "Local guide:"
-            },
-            {
-              "type": "text",
-              "text": " If you yodel, the echo yodels back. That is not encouragement. That is acoustics."
-            }
+            { "type": "text", "marks": [{ "type": "bold" }], "text": "Local guide:" },
+            { "type": "text", "text": " If you yodel, the echo yodels back. That is not encouragement. That is acoustics." }
           ]
         }
       ]
     },
-    {
-      "type": "horizontalRule"
-    },
+    { "type": "horizontalRule" },
     {
       "type": "paragraph",
       "content": [
