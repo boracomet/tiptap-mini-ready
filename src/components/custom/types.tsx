@@ -75,7 +75,7 @@ export function BentoMinimalTiptap() {
       </div>
       <BentoCard
         name="Notion-like"
-        description="Demo template (no TipTap Cloud AI/collab). Slash menu and a floating toolbar."
+        description="Local demo (no TipTap Cloud AI or collaboration). Hover a block for + and the drag handle. AI slash commands stay off."
         background={<NotionLikeEditor />}
       />
     </BentoGrid>

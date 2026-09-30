@@ -7,6 +7,12 @@ import { BubbleMenu } from "@tiptap/react/menus"
 import { StarterKit } from "@tiptap/starter-kit"
 import { TaskItem, TaskList } from "@tiptap/extension-list"
 import { Placeholder } from "@tiptap/extensions"
+import {
+  DragHandlePlugin,
+  defaultComputePositionConfig,
+  dragHandlePluginDefaultKey,
+} from "@tiptap/extension-drag-handle"
+import { NodeRangeSelection } from "@tiptap/extension-node-range"
 import { Image } from "@/components/minimal-tiptap/extensions/image"
 import { MeasuredContainer } from "@/components/minimal-tiptap/components/measured-container"
 import {
@@ -14,44 +20,158 @@ import {
   FontItalicIcon,
   StrikethroughIcon,
 } from "@radix-ui/react-icons"
+import {
+  Code,
+  GripVertical,
+  Heading1,
+  Heading2,
+  Heading3,
+  Image as ImageIcon,
+  List,
+  ListOrdered,
+  ListTodo,
+  Minus,
+  Plus,
+  Sparkles,
+  TextQuote,
+  Type,
+  type LucideIcon,
+} from "lucide-react"
 import { cn } from "@/lib/utils"
 import { ToolbarButton } from "@/components/minimal-tiptap/components/toolbar-button"
 
 type SlashMatch = { from: number; to: number; query: string }
 
+type SlashGroup = "AI" | "Style" | "Lists" | "Blocks"
+
 type SlashItem = {
+  id: string
   label: string
-  run: (editor: Editor) => void
+  group: SlashGroup
+  keywords: string
+  icon: LucideIcon
+  disabled?: boolean
+  run?: (editor: Editor) => void
+}
+
+const groups: SlashGroup[] = ["AI", "Style", "Lists", "Blocks"]
+
+const pickImage = (editor: Editor) => {
+  const input = document.createElement("input")
+  input.type = "file"
+  input.accept = "image/*"
+  input.onchange = () => {
+    const file = input.files?.[0]
+    if (!file) return
+    editor.chain().focus().setImages([{ src: file, alt: file.name, title: file.name }]).run()
+  }
+  input.click()
 }
 
 const slashItems: SlashItem[] = [
   {
+    id: "continue",
+    label: "Continue Writing",
+    group: "AI",
+    keywords: "ai continue writing",
+    icon: Sparkles,
+    disabled: true,
+  },
+  {
+    id: "ask",
+    label: "Ask AI",
+    group: "AI",
+    keywords: "ai ask",
+    icon: Sparkles,
+    disabled: true,
+  },
+  {
+    id: "text",
     label: "Text",
+    group: "Style",
+    keywords: "text paragraph",
+    icon: Type,
     run: (editor) => editor.chain().focus().setParagraph().run(),
   },
   {
-    label: "Heading",
-    run: (editor) => editor.chain().focus().toggleHeading({ level: 2 }).run(),
+    id: "h1",
+    label: "Heading 1",
+    group: "Style",
+    keywords: "h1 heading title",
+    icon: Heading1,
+    run: (editor) => editor.chain().focus().setHeading({ level: 1 }).run(),
   },
   {
-    label: "List",
+    id: "h2",
+    label: "Heading 2",
+    group: "Style",
+    keywords: "h2 heading",
+    icon: Heading2,
+    run: (editor) => editor.chain().focus().setHeading({ level: 2 }).run(),
+  },
+  {
+    id: "h3",
+    label: "Heading 3",
+    group: "Style",
+    keywords: "h3 heading",
+    icon: Heading3,
+    run: (editor) => editor.chain().focus().setHeading({ level: 3 }).run(),
+  },
+  {
+    id: "bullet",
+    label: "Bullet list",
+    group: "Lists",
+    keywords: "bullet list ul",
+    icon: List,
     run: (editor) => editor.chain().focus().toggleBulletList().run(),
   },
   {
+    id: "numbered",
+    label: "Numbered list",
+    group: "Lists",
+    keywords: "numbered ordered list ol",
+    icon: ListOrdered,
+    run: (editor) => editor.chain().focus().toggleOrderedList().run(),
+  },
+  {
+    id: "todo",
     label: "Todo",
+    group: "Lists",
+    keywords: "todo task checkbox",
+    icon: ListTodo,
     run: (editor) => editor.chain().focus().toggleTaskList().run(),
   },
   {
+    id: "quote",
     label: "Quote",
+    group: "Blocks",
+    keywords: "quote blockquote",
+    icon: TextQuote,
     run: (editor) => editor.chain().focus().toggleBlockquote().run(),
   },
   {
+    id: "code",
     label: "Code",
+    group: "Blocks",
+    keywords: "code block",
+    icon: Code,
     run: (editor) => editor.chain().focus().toggleCodeBlock().run(),
   },
   {
+    id: "divider",
     label: "Divider",
+    group: "Blocks",
+    keywords: "divider horizontal rule hr",
+    icon: Minus,
     run: (editor) => editor.chain().focus().setHorizontalRule().run(),
+  },
+  {
+    id: "image",
+    label: "Image",
+    group: "Blocks",
+    keywords: "image photo picture upload",
+    icon: ImageIcon,
+    run: pickImage,
   },
 ]
 
@@ -60,7 +180,7 @@ const slashMatch = (editor: Editor): SlashMatch | null => {
   if (!selection.empty) return null
 
   const { $from } = selection
-  if (!$from.parent.isTextblock) return null
+  if (!$from.parent.isTextblock || $from.parent.type.spec.code) return null
 
   const textBefore = $from.parent.textBetween(0, $from.parentOffset, "\n", "\0")
   const match = /(^|\s)\/([^\s/]*)$/.exec(textBefore)
@@ -72,6 +192,180 @@ const slashMatch = (editor: Editor): SlashMatch | null => {
     to: $from.pos,
     query,
   }
+}
+
+const menuCoordinates = (anchor: { top: number; bottom: number; left: number }) => {
+  const menuHeight = 400
+  const below = anchor.bottom + 8
+  const top =
+    below + menuHeight > window.innerHeight ? Math.max(8, anchor.top - menuHeight - 8) : below
+  return { top, left: anchor.left }
+}
+
+const firstEnabledIndex = (items: SlashItem[]) => {
+  const index = items.findIndex((item) => !item.disabled)
+  return index < 0 ? 0 : index
+}
+
+const stepIndex = (items: SlashItem[], start: number, direction: 1 | -1) => {
+  if (items.length === 0) return 0
+  let index = start
+  for (let step = 0; step < items.length; step += 1) {
+    index = (index + direction + items.length) % items.length
+    if (!items[index]?.disabled) return index
+  }
+  return start
+}
+
+type DragSource = { pos: number; size: number }
+
+const topLevelFromPoint = (view: Editor["view"], x: number, y: number) => {
+  const elements = view.root.elementsFromPoint(x, y)
+  for (const element of elements) {
+    if (!(element instanceof HTMLElement) || !view.dom.contains(element)) continue
+    let current: HTMLElement | null = element
+    while (current.parentElement && current.parentElement !== view.dom) {
+      current = current.parentElement
+    }
+    if (current.parentElement !== view.dom) continue
+
+    let pos: number
+    try {
+      pos = view.posAtDOM(current, 0)
+    } catch {
+      continue
+    }
+
+    const $pos = view.state.doc.resolve(pos)
+    const nodePos = $pos.depth === 0 ? pos : $pos.before(1)
+    const node = view.state.doc.nodeAt(nodePos)
+    if (!node) continue
+    return { pos: nodePos, size: node.nodeSize, dom: current }
+  }
+  return null
+}
+
+const BlockGutter = ({
+  editor,
+  onAdd,
+  dragSourceRef,
+}: {
+  editor: Editor
+  onAdd: (pos: number) => void
+  dragSourceRef: React.MutableRefObject<DragSource | null>
+}) => {
+  const [element, setElement] = React.useState<HTMLDivElement | null>(null)
+  const posRef = React.useRef(-1)
+  const addPressed = React.useRef(false)
+  const onAddRef = React.useRef(onAdd)
+  onAddRef.current = onAdd
+
+  React.useEffect(() => {
+    if (!element || editor.isDestroyed) return
+
+    const cancelAddDrag = (event: DragEvent) => {
+      if (!addPressed.current) return
+      event.preventDefault()
+      event.stopImmediatePropagation()
+    }
+
+    const rememberSource = (event: DragEvent) => {
+      if (addPressed.current) return
+      const pos = posRef.current
+      const node = pos >= 0 ? editor.state.doc.nodeAt(pos) : null
+      if (!node) {
+        dragSourceRef.current = null
+        return
+      }
+      dragSourceRef.current = { pos, size: node.nodeSize }
+      event.dataTransfer?.setData("text/plain", node.textContent || "block")
+    }
+
+    const ensureDragData = (event: DragEvent) => {
+      if (addPressed.current || !event.dataTransfer) return
+      const source = dragSourceRef.current
+      const node = source ? editor.state.doc.nodeAt(source.pos) : null
+      event.dataTransfer.setData("text/plain", node?.textContent || "block")
+      if (editor.view.dragging || !node || !source) return
+
+      const selection = NodeRangeSelection.create(editor.state.doc, source.pos, source.pos + node.nodeSize)
+      editor.view.dragging = { slice: selection.content(), move: true }
+      editor.view.dispatch(editor.state.tr.setSelection(selection))
+    }
+
+    const clearSource = () => {
+      dragSourceRef.current = null
+    }
+
+    element.addEventListener("dragstart", cancelAddDrag, true)
+    element.addEventListener("dragstart", rememberSource, true)
+    element.addEventListener("dragend", clearSource)
+    const plugin = DragHandlePlugin({
+      pluginKey: dragHandlePluginDefaultKey,
+      editor,
+      element,
+      computePositionConfig: {
+        ...defaultComputePositionConfig,
+        placement: "left-start",
+        strategy: "absolute",
+      },
+      onNodeChange: ({ pos }) => {
+        posRef.current = pos
+      },
+    })
+    element.addEventListener("dragstart", ensureDragData)
+    editor.registerPlugin(plugin.plugin)
+
+    return () => {
+      element.removeEventListener("dragstart", cancelAddDrag, true)
+      element.removeEventListener("dragstart", rememberSource, true)
+      element.removeEventListener("dragstart", ensureDragData)
+      element.removeEventListener("dragend", clearSource)
+      editor.unregisterPlugin(dragHandlePluginDefaultKey)
+      plugin.unbind()
+    }
+  }, [dragSourceRef, editor, element])
+
+  return (
+    <div
+      ref={setElement}
+      data-notion-gutter
+      aria-label="Block controls"
+      className="text-muted-foreground z-30 flex items-center"
+      style={{ visibility: "hidden", position: "absolute" }}
+    >
+      <button
+        type="button"
+        data-add-block
+        aria-label="Add a block below"
+        className="hover:bg-accent hover:text-accent-foreground flex size-6 items-center justify-center rounded"
+        draggable={false}
+        onMouseDown={(event) => {
+          event.preventDefault()
+          event.stopPropagation()
+          addPressed.current = true
+        }}
+        onMouseUp={() => {
+          addPressed.current = false
+        }}
+        onClick={(event) => {
+          event.preventDefault()
+          event.stopPropagation()
+          addPressed.current = false
+          onAddRef.current(posRef.current)
+        }}
+      >
+        <Plus className="size-4" />
+      </button>
+      <span
+        aria-hidden
+        className="flex size-6 cursor-grab items-center justify-center rounded active:cursor-grabbing"
+        title="Drag to move"
+      >
+        <GripVertical className="size-4" />
+      </span>
+    </div>
+  )
 }
 
 const seed = {
@@ -253,6 +547,8 @@ const seed = {
 
 export const NotionLikeEditor = () => {
   const [match, setMatch] = React.useState<SlashMatch | null>(null)
+  const [forcedOpen, setForcedOpen] = React.useState(false)
+  const [filter, setFilter] = React.useState("")
   const [index, setIndex] = React.useState(0)
   const [coords, setCoords] = React.useState({ top: 0, left: 0 })
   const menuRef = React.useRef({
@@ -261,23 +557,40 @@ export const NotionLikeEditor = () => {
     items: [] as SlashItem[],
     match: null as SlashMatch | null,
   })
+  const menuElementRef = React.useRef<HTMLDivElement | null>(null)
+  const filterRef = React.useRef<HTMLInputElement | null>(null)
+  const filterFocused = React.useRef(false)
+  const forcedRef = React.useRef(false)
+  const editorRef = React.useRef<Editor | null>(null)
+  const dragSourceRef = React.useRef<DragSource | null>(null)
 
   const filtered = React.useMemo(() => {
-    const query = match?.query.trim().toLowerCase() ?? ""
+    const query = filter.trim().toLowerCase()
     if (!query) return slashItems
-    return slashItems.filter((item) => item.label.toLowerCase().includes(query))
-  }, [match])
+    return slashItems.filter((item) => {
+      const haystack = `${item.label} ${item.keywords}`.toLowerCase()
+      return haystack.includes(query)
+    })
+  }, [filter])
 
-  const applyItem = React.useCallback((editor: Editor, item: SlashItem, range: SlashMatch) => {
-    editor.chain().focus().deleteRange({ from: range.from, to: range.to }).run()
+  const menuOpen = (Boolean(match) || forcedOpen) && filtered.length > 0
+
+  const applyItem = React.useCallback((editor: Editor, item: SlashItem, range: SlashMatch | null) => {
+    if (item.disabled || !item.run) return
+    if (range) {
+      editor.chain().focus().deleteRange({ from: range.from, to: range.to }).run()
+    } else {
+      editor.chain().focus().run()
+    }
     item.run(editor)
+    forcedRef.current = false
+    setForcedOpen(false)
     setMatch(null)
+    setFilter("")
   }, [])
 
-  const editorRef = React.useRef<Editor | null>(null)
-
   menuRef.current = {
-    open: Boolean(match) && filtered.length > 0,
+    open: menuOpen,
     index,
     items: filtered,
     match,
@@ -291,6 +604,7 @@ export const NotionLikeEditor = () => {
         orderedList: { HTMLAttributes: { class: "list-node" } },
         blockquote: { HTMLAttributes: { class: "block-node" } },
         paragraph: { HTMLAttributes: { class: "text-node" } },
+        trailingNode: { node: "paragraph", notAfter: ["paragraph"] },
       }),
       TaskList.configure({
         HTMLAttributes: { class: "task-list-node" },
@@ -302,7 +616,9 @@ export const NotionLikeEditor = () => {
         allowBase64: false,
       }),
       Placeholder.configure({
-        placeholder: "Type `/` for commands…",
+        placeholder: "Type / for commands…",
+        showOnlyCurrent: true,
+        includeChildren: false,
       }),
     ],
     []
@@ -313,32 +629,63 @@ export const NotionLikeEditor = () => {
     content: seed,
     editorProps: {
       attributes: {
-        class: "focus:outline-hidden px-5 py-4",
+        class: "focus:outline-hidden py-4 pr-5 pl-16",
+      },
+      handleDrop: (view, event) => {
+        const source = dragSourceRef.current
+        dragSourceRef.current = null
+        if (!source) return false
+
+        const target = topLevelFromPoint(view, event.clientX, event.clientY)
+        const sourceNode = view.state.doc.nodeAt(source.pos)
+        if (!target || !sourceNode) return true
+
+        const rect = target.dom.getBoundingClientRect()
+        const placeAfter = event.clientY > rect.top + rect.height / 2
+        let insertAt = placeAfter ? target.pos + target.size : target.pos
+        if (insertAt >= source.pos && insertAt <= source.pos + sourceNode.nodeSize) return true
+
+        const tr = view.state.tr
+        if (insertAt < source.pos) {
+          tr.insert(insertAt, sourceNode)
+          const mapped = tr.mapping.map(source.pos)
+          tr.delete(mapped, mapped + sourceNode.nodeSize)
+        } else {
+          tr.delete(source.pos, source.pos + sourceNode.nodeSize)
+          insertAt = tr.mapping.map(insertAt)
+          tr.insert(insertAt, sourceNode)
+        }
+
+        view.dispatch(tr)
+        return true
       },
       handleKeyDown: (_view, event) => {
         const menu = menuRef.current
         const current = editorRef.current
-        if (!menu.open || !menu.match || !current) return false
+        if (!menu.open || !current) return false
 
         if (event.key === "ArrowDown") {
-          const next = (menu.index + 1) % menu.items.length
+          const next = stepIndex(menu.items, menu.index, 1)
           menuRef.current.index = next
           setIndex(next)
           return true
         }
         if (event.key === "ArrowUp") {
-          const next = (menu.index - 1 + menu.items.length) % menu.items.length
+          const next = stepIndex(menu.items, menu.index, -1)
           menuRef.current.index = next
           setIndex(next)
           return true
         }
         if (event.key === "Enter") {
-          const item = menu.items[menuRef.current.index] ?? menu.items[0]
-          if (item) applyItem(current, item, menu.match)
+          const item = menu.items[menuRef.current.index]
+          if (item && !item.disabled) applyItem(current, item, menu.match)
           return true
         }
         if (event.key === "Escape") {
+          forcedRef.current = false
+          setForcedOpen(false)
           setMatch(null)
+          setFilter("")
           return true
         }
         return false
@@ -348,15 +695,40 @@ export const NotionLikeEditor = () => {
 
   editorRef.current = editor
 
+  const addBlockBelow = React.useCallback((pos: number) => {
+    const current = editorRef.current
+    if (!current || pos < 0) return
+    const node = current.state.doc.nodeAt(pos)
+    if (!node) return
+
+    const insertAt = pos + node.nodeSize
+    forcedRef.current = true
+    current.chain().insertContentAt(insertAt, { type: "paragraph" }).setTextSelection(insertAt + 1).run()
+    const position = current.view.coordsAtPos(insertAt + 1)
+    setForcedOpen(true)
+    setMatch(null)
+    setFilter("")
+    setIndex(firstEnabledIndex(slashItems))
+    setCoords(menuCoordinates(position))
+  }, [])
+
   React.useEffect(() => {
     if (!editor) return
 
     const update = () => {
       const next = slashMatch(editor)
-      setMatch(next)
-      if (!next) return
-      const position = editor.view.coordsAtPos(next.from)
-      setCoords({ top: position.bottom + 8, left: position.left })
+      if (next) {
+        forcedRef.current = false
+        setForcedOpen(false)
+        setMatch(next)
+        if (!filterFocused.current) setFilter(next.query)
+        const position = editor.view.coordsAtPos(next.from)
+        setCoords(menuCoordinates(position))
+        return
+      }
+
+      if (filterFocused.current || forcedRef.current) return
+      setMatch(null)
     }
 
     editor.on("transaction", update)
@@ -366,8 +738,68 @@ export const NotionLikeEditor = () => {
   }, [editor])
 
   React.useEffect(() => {
-    setIndex(0)
-  }, [match?.query])
+    setIndex(firstEnabledIndex(filtered))
+  }, [filter, filtered])
+
+  React.useEffect(() => {
+    if (forcedOpen) filterRef.current?.focus()
+  }, [forcedOpen])
+
+  React.useEffect(() => {
+    if (!menuOpen) return
+
+    const onPointerDown = (event: MouseEvent) => {
+      const target = event.target
+      if (!(target instanceof Node)) return
+      if (menuElementRef.current?.contains(target)) return
+      if (target instanceof Element && target.closest("[data-notion-gutter]")) return
+
+      const current = editorRef.current
+      const range = menuRef.current.match
+      forcedRef.current = false
+      setForcedOpen(false)
+      setFilter("")
+      setMatch(null)
+      if (current && range) {
+        current.chain().focus().deleteRange({ from: range.from, to: range.to }).run()
+      }
+    }
+
+    document.addEventListener("mousedown", onPointerDown)
+    return () => document.removeEventListener("mousedown", onPointerDown)
+  }, [menuOpen])
+
+  const onFilterChange = (value: string) => {
+    const sanitized = value.replace(/\//g, "")
+    setFilter(sanitized)
+    const current = editorRef.current
+    const range = menuRef.current.match
+    if (!current || !range) return
+    const query = sanitized.replace(/\s/g, "")
+    current.view.dispatch(current.state.tr.insertText(query, range.from + 1, range.to))
+  }
+
+  const onFilterKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
+    const menu = menuRef.current
+    if (event.key === "ArrowDown") {
+      event.preventDefault()
+      setIndex(stepIndex(menu.items, menu.index, 1))
+    } else if (event.key === "ArrowUp") {
+      event.preventDefault()
+      setIndex(stepIndex(menu.items, menu.index, -1))
+    } else if (event.key === "Enter") {
+      event.preventDefault()
+      const current = editorRef.current
+      const item = menu.items[menu.index]
+      if (current && item && !item.disabled) applyItem(current, item, menu.match)
+    } else if (event.key === "Escape") {
+      event.preventDefault()
+      forcedRef.current = false
+      setForcedOpen(false)
+      setMatch(null)
+      setFilter("")
+    }
+  }
 
   if (!editor) return null
 
@@ -377,7 +809,8 @@ export const NotionLikeEditor = () => {
       name="editor"
       className="border-input relative flex min-h-56 w-full flex-col rounded-xl border shadow-xs"
     >
-      <EditorContent editor={editor} className="minimal-tiptap-editor" />
+      <EditorContent editor={editor} className="notion-like-surface minimal-tiptap-editor relative" />
+      <BlockGutter editor={editor} onAdd={addBlockBelow} dragSourceRef={dragSourceRef} />
       <BubbleMenu
         editor={editor}
         pluginKey="notionFloatingToolbar"
@@ -410,32 +843,76 @@ export const NotionLikeEditor = () => {
           </ToolbarButton>
         </div>
       </BubbleMenu>
-      {match && filtered.length > 0 ? (
+      {menuOpen ? (
         <div
+          ref={menuElementRef}
           role="listbox"
           aria-label="Slash commands"
-          className="bg-popover text-popover-foreground fixed z-50 w-48 rounded-md border p-1 shadow-md"
+          className="bg-popover text-popover-foreground fixed z-50 w-72 rounded-lg border p-2 shadow-lg"
           style={{ top: coords.top, left: coords.left }}
         >
-          {filtered.map((item, itemIndex) => (
-            <button
-              key={item.label}
-              type="button"
-              role="option"
-              aria-selected={itemIndex === index}
-              className={cn(
-                "flex w-full rounded px-2 py-1.5 text-left text-sm",
-                itemIndex === index && "bg-accent"
-              )}
-              onMouseDown={(event) => {
-                event.preventDefault()
-                if (match) applyItem(editor, item, match)
+          <label className="bg-muted mb-2 flex items-center gap-1 rounded-md px-2">
+            <span className="text-muted-foreground text-sm" aria-hidden>
+              /
+            </span>
+            <input
+              ref={filterRef}
+              value={filter}
+              onChange={(event) => onFilterChange(event.target.value)}
+              onKeyDown={onFilterKeyDown}
+              onFocus={() => {
+                filterFocused.current = true
               }}
-              onMouseEnter={() => setIndex(itemIndex)}
-            >
-              {item.label}
-            </button>
-          ))}
+              onBlur={() => {
+                filterFocused.current = false
+              }}
+              placeholder="Filter..."
+              aria-label="Filter commands"
+              className="placeholder:text-muted-foreground w-full bg-transparent py-1.5 text-sm outline-none"
+            />
+          </label>
+          <div className="max-h-80 overflow-auto">
+            {groups.map((group) => {
+              const items = filtered.filter((item) => item.group === group)
+              if (items.length === 0) return null
+              return (
+                <div key={group} className="mb-1">
+                  <div className="text-muted-foreground px-2 py-1 text-xs font-medium">{group}</div>
+                  {items.map((item) => {
+                    const itemIndex = filtered.indexOf(item)
+                    const Icon = item.icon
+                    const selected = itemIndex === index && !item.disabled
+                    return (
+                      <button
+                        key={item.id}
+                        type="button"
+                        role="option"
+                        aria-selected={selected}
+                        aria-disabled={item.disabled || undefined}
+                        disabled={item.disabled}
+                        title={item.disabled ? "Unavailable without a TipTap Cloud AI token" : undefined}
+                        className={cn(
+                          "flex w-full items-center gap-2 rounded px-2 py-1.5 text-left text-sm",
+                          selected && "bg-accent",
+                          item.disabled && "cursor-not-allowed opacity-50"
+                        )}
+                        onMouseDown={(event) => {
+                          event.preventDefault()
+                          if (!item.disabled) applyItem(editor, item, match)
+                        }}
+                        onMouseEnter={() => {
+                          if (!item.disabled) setIndex(itemIndex)
+                        }}
+                      >
+                        <Icon className="text-muted-foreground size-4 shrink-0" />
+                        {item.label}
+                      </button>
+                    )
+                  })}
+                </div>
+              )
+            })}
+          </div>
         </div>
       ) : null}
     </MeasuredContainer>

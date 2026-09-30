@@ -298,3 +298,11 @@
 .minimal-tiptap-editor .ProseMirror .ProseMirror-selectednode iframe {
   @apply outline outline-2 outline-offset-2 outline-primary;
 }
+
+.notion-like-surface .ProseMirror .is-empty::before {
+  content: attr(data-placeholder);
+  float: left;
+  height: 0;
+  pointer-events: none;
+  color: var(--mt-secondary);
+}
