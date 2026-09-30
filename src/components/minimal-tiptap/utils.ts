@@ -88,24 +88,61 @@ export const isUrl = (
   }
 }
 
+const BLOCKED_PROTOCOLS = ["javascript:", "vbscript:", "file:", "data:"]
+
+const hasBlockedProtocol = (
+  value: string,
+  allowBase64 = false
+): boolean => {
+  const trimmed = value.trim()
+  let protocol = ""
+
+  try {
+    protocol = new URL(trimmed).protocol.toLowerCase()
+  } catch {
+    const match = /^\s*([a-z][a-z0-9+.-]*:)/i.exec(trimmed)
+    protocol = match?.[1].toLowerCase() ?? ""
+  }
+
+  if (!protocol) return false
+  if (allowBase64 && protocol === "data:") {
+    return !trimmed.toLowerCase().startsWith("data:image/")
+  }
+
+  return BLOCKED_PROTOCOLS.includes(protocol)
+}
+
 export const sanitizeUrl = (
   url: string | null | undefined,
   options: { allowBase64?: boolean } = {}
 ): string | undefined => {
   if (!url) return undefined
 
-  if (options.allowBase64 && url.startsWith("data:image")) {
-    return isUrl(url, { requireHostname: false, allowBase64: true })
-      ? url
+  const trimmed = url.trim()
+  if (!trimmed || hasBlockedProtocol(trimmed, options.allowBase64)) {
+    return undefined
+  }
+
+  if (options.allowBase64 && trimmed.startsWith("data:image")) {
+    return isUrl(trimmed, { requireHostname: false, allowBase64: true })
+      ? trimmed
       : undefined
   }
 
-  return isUrl(url, {
-    requireHostname: false,
-    allowBase64: options.allowBase64,
-  }) || /^(\/|#|mailto:|sms:|fax:|tel:)/.test(url)
-    ? url
-    : `https://${url}`
+  if (
+    isUrl(trimmed, {
+      requireHostname: false,
+      allowBase64: options.allowBase64,
+    }) ||
+    /^(\/|#|mailto:|sms:|fax:|tel:)/.test(trimmed)
+  ) {
+    return trimmed
+  }
+
+  // A declared scheme that failed validation must not be rewritten to https://.
+  if (/^[a-z][a-z0-9+.-]*:/i.test(trimmed)) return undefined
+
+  return `https://${trimmed}`
 }
 
 export const shouldSyncExternalValue = (

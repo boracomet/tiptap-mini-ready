@@ -20,6 +20,10 @@ export const LinkEditBlock = ({
   className,
 }: LinkEditorProps) => {
   const formRef = React.useRef<HTMLDivElement>(null)
+  const fieldId = React.useId()
+  const urlId = `${fieldId}-url`
+  const textId = `${fieldId}-text`
+  const newTabId = `${fieldId}-new-tab`
   const [url, setUrl] = React.useState(defaultUrl || "")
   const [text, setText] = React.useState(defaultText || "")
   const [isNewTab, setIsNewTab] = React.useState(defaultIsNewTab || false)
@@ -50,8 +54,9 @@ export const LinkEditBlock = ({
     <div ref={formRef}>
       <div className={cn("space-y-4", className)}>
         <div className="space-y-1">
-          <Label>URL</Label>
+          <Label htmlFor={urlId}>URL</Label>
           <Input
+            id={urlId}
             type="url"
             required
             placeholder="Enter URL"
@@ -61,8 +66,9 @@ export const LinkEditBlock = ({
         </div>
 
         <div className="space-y-1">
-          <Label>Display Text (optional)</Label>
+          <Label htmlFor={textId}>Display Text (optional)</Label>
           <Input
+            id={textId}
             type="text"
             placeholder="Enter display text"
             value={text}
@@ -71,8 +77,8 @@ export const LinkEditBlock = ({
         </div>
 
         <div className="flex items-center space-x-2">
-          <Label>Open in New Tab</Label>
-          <Switch checked={isNewTab} onCheckedChange={setIsNewTab} />
+          <Label htmlFor={newTabId}>Open in New Tab</Label>
+          <Switch id={newTabId} checked={isNewTab} onCheckedChange={setIsNewTab} />
         </div>
 
         <div className="flex justify-end space-x-2">

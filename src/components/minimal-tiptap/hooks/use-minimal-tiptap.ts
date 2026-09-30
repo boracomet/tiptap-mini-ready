@@ -97,6 +97,9 @@ const createExtensions = ({
     link: {
       enableClickSelection: true,
       openOnClick: false,
+      autolink: true,
+      defaultProtocol: "https",
+      protocols: ["http", "https", "mailto", "tel", "sms", "fax"],
       HTMLAttributes: {
         class: "link",
       },

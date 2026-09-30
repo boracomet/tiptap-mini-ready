@@ -60,6 +60,17 @@ describe("setEditorLink", () => {
     assert.equal(editor.state.doc.childCount, 1)
   })
 
+  it("refuses a javascript URL", () => {
+    editor.commands.setContent("<p>Hello Alps</p>")
+    editor.commands.setTextSelection({ from: 1, to: 6 })
+
+    const applied = setEditorLink(editor, "javascript:alert(1)", "Hello", true)
+
+    assert.equal(applied, false)
+    assert.equal(editor.getHTML().toLowerCase().includes("javascript:"), false)
+    assert.equal(editor.state.doc.childCount, 1)
+  })
+
   it("does not set target or rel when the link stays in the same tab", () => {
     editor.commands.setContent("<p>Hello Alps</p>")
     editor.commands.setTextSelection({ from: 1, to: 6 })
