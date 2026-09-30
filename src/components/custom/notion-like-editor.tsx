@@ -803,10 +803,11 @@ export const NotionLikeEditor = () => {
         const sourceNode = view.state.doc.nodeAt(source.pos)
         if (!target || !sourceNode) return false
 
+        if (target.pos === source.pos) return false
+
         const rect = target.dom.getBoundingClientRect()
         const placeAfter = event.clientY > rect.top + rect.height / 2
         let insertAt = placeAfter ? target.pos + target.size : target.pos
-        if (insertAt >= source.pos && insertAt <= source.pos + sourceNode.nodeSize) return false
 
         const tr = view.state.tr
         if (insertAt < source.pos) {
