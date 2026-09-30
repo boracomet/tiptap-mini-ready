@@ -1,0 +1,88 @@
+import { BentoCard, BentoGrid } from "@/components/custom/bento-grid"
+import { MinimalTiptapEditor } from "../minimal-tiptap"
+import { cn } from "@/lib/utils"
+import { MinimalTiptapOne } from "./minimal-tiptap-one"
+import { MinimalTiptapThree } from "./minimal-tiptap-three"
+import Content from "../../data/content.json"
+import { markdownContent } from "../../data/markdown-content"
+
+const features = [
+  {
+    name: "Tiptap Mini Ready 1",
+    className: "col-span-3 lg:col-span-1",
+    background: (
+      <MinimalTiptapOne
+        throttleDelay={1000}
+        className={cn("h-full min-h-56 w-full min-w-0 rounded-xl")}
+        editorContentClassName="overflow-auto h-full"
+        output="html"
+        placeholder="Comment here..."
+        editable={true}
+        editorClassName="focus:outline-hidden px-5 py-4 h-full"
+      />
+    ),
+  },
+  {
+    name: "Tiptap Mini Ready 2",
+    className: "col-span-3 lg:col-span-2",
+    background: (
+      <MinimalTiptapEditor
+        throttleDelay={2000}
+        className={cn("h-full min-h-56 w-full min-w-0 rounded-xl")}
+        editorContentClassName="overflow-auto h-full"
+        output="html"
+        placeholder="Type your description here..."
+        editable={true}
+        editorClassName="focus:outline-hidden px-5 py-4 h-full"
+      />
+    ),
+  },
+  {
+    name: "Tiptap Mini Ready 3",
+    className: "col-span-3",
+    background: (
+      <MinimalTiptapThree
+        value={Content}
+        throttleDelay={3000}
+        className={cn("h-full min-h-56 w-full min-w-0 rounded-xl")}
+        editorContentClassName="overflow-auto h-full"
+        output="json"
+        onChange={(value) => {
+          console.log("Updated value:", value)
+        }}
+        placeholder="This is your placeholder..."
+        editable={true}
+        editorClassName="focus:outline-hidden px-5 py-4 h-full"
+      />
+    ),
+  },
+  {
+    name: "Tiptap Mini Ready 4",
+    className: "col-span-3",
+    background: (
+      <MinimalTiptapEditor
+        value={markdownContent}
+        throttleDelay={2000}
+        className={cn("h-full min-h-56 w-full min-w-0 rounded-xl")}
+        editorContentClassName="overflow-auto h-full"
+        output="markdown"
+        onChange={(value) => {
+          console.log("Updated value:", value)
+        }}
+        placeholder="Type your description here..."
+        editable={true}
+        editorClassName="focus:outline-hidden px-5 py-4 h-full"      
+      />
+    ),
+  },
+]
+
+export function BentoMinimalTiptap() {
+  return (
+    <BentoGrid>
+      {features.map((feature, idx) => (
+        <BentoCard key={idx} {...feature} />
+      ))}
+    </BentoGrid>
+  )
+}

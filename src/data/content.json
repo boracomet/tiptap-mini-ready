@@ -1,0 +1,156 @@
+{
+  "type": "doc",
+  "content": [
+    {
+      "type": "heading",
+      "attrs": { "level": 1 },
+      "content": [
+        { "type": "text", "text": "Heidi Negotiates With the Alps" }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        {
+          "type": "text",
+          "text": "The Swiss Alps did not ask for a publicist, but they got Heidi anyway. Somewhere between a cowbell and a postcard, she is still winning the argument about fresh air in "
+        },
+        {
+          "type": "text",
+          "marks": [
+            {
+              "type": "link",
+              "attrs": {
+                "href": "https://en.wikipedia.org/wiki/Swiss_Alps",
+                "target": "_blank",
+                "rel": "noopener noreferrer",
+                "class": "link"
+              }
+            }
+          ],
+          "text": "Switzerland"
+        },
+        {
+          "type": "text",
+          "text": "."
+        }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        {
+          "type": "text",
+          "marks": [{ "type": "italic" }],
+          "text": "The meadow is complimentary. The cheese takes itself very seriously."
+        }
+      ]
+    },
+    {
+      "type": "image",
+      "attrs": {
+        "src": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/60/Matterhorn_from_Domh%C3%BCtte_-_2.jpg/960px-Matterhorn_from_Domh%C3%BCtte_-_2.jpg",
+        "alt": "The Matterhorn, looking as if it practiced this pose",
+        "title": "Matterhorn",
+        "fileName": null
+      }
+    },
+    {
+      "type": "heading",
+      "attrs": { "level": 2 },
+      "content": [{ "type": "text", "text": "A short field guide" }]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        {
+          "type": "text",
+          "text": "Heidi's office has excellent views and questionable management. Bring layers, and do not argue with the goats."
+        }
+      ]
+    },
+    {
+      "type": "bulletList",
+      "content": [
+        {
+          "type": "listItem",
+          "content": [
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "marks": [{ "type": "bold" }],
+                  "text": "Matterhorn"
+                },
+                {
+                  "type": "text",
+                  "text": " — the mountain that refuses to sit up straight, and knows it."
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "listItem",
+          "content": [
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "A meadow with a job description. Heidi clocks in. The wildflowers do not."
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "listItem",
+          "content": [
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "One thermos. Even a wholesome Alpine story eventually needs coffee."
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "blockquote",
+      "content": [
+        {
+          "type": "paragraph",
+          "content": [
+            {
+              "type": "text",
+              "marks": [{ "type": "bold" }],
+              "text": "Local guide:"
+            },
+            {
+              "type": "text",
+              "text": " If you yodel, the echo yodels back. That is not encouragement. That is acoustics."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "horizontalRule"
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        {
+          "type": "text",
+          "text": "Heidi would like the record to show that the Alps are lovely, the goats believe they are in charge, and the mountains already scheduled that pleasantly small feeling before breakfast."
+        }
+      ]
+    }
+  ]
+}
