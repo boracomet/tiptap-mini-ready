@@ -3,75 +3,59 @@ import { MinimalTiptapEditor } from "../minimal-tiptap"
 import { cn } from "@/lib/utils"
 import { MinimalTiptapOne } from "./minimal-tiptap-one"
 import { MinimalTiptapThree } from "./minimal-tiptap-three"
+import { NotionLikeEditor } from "./notion-like-editor"
 import Content from "../../data/content.json"
-import { markdownContent } from "../../data/markdown-content"
+import Gallery from "../../data/gallery.json"
+
+const commentSeed =
+  "<p>The Swiss air is complimentary. Heidi would still like a reply before the goats take the thread.</p>"
 
 const features = [
   {
-    name: "Tiptap Mini Ready 1",
-    className: "col-span-3 lg:col-span-1",
+    name: "Comment",
+    description: "Add a comment",
     background: (
       <MinimalTiptapOne
+        value={commentSeed}
         throttleDelay={1000}
-        className={cn("h-full min-h-56 w-full min-w-0 rounded-xl")}
-        editorContentClassName="overflow-auto h-full"
+        className={cn("h-auto min-h-40 w-full min-w-0 rounded-xl")}
+        editorContentClassName="overflow-auto"
         output="html"
-        placeholder="Comment here..."
+        placeholder="Write a comment…"
         editable={true}
-        editorClassName="focus:outline-hidden px-5 py-4 h-full"
+        editorClassName="focus:outline-hidden px-5 py-4"
       />
     ),
   },
   {
-    name: "Tiptap Mini Ready 2",
-    className: "col-span-3 lg:col-span-2",
+    name: "Gallery",
+    description: "Captions for a Heidi trip through the Alps.",
     background: (
       <MinimalTiptapEditor
+        value={Gallery}
         throttleDelay={2000}
-        className={cn("h-full min-h-56 w-full min-w-0 rounded-xl")}
-        editorContentClassName="overflow-auto h-full"
+        className={cn("h-auto min-h-56 w-full min-w-0 rounded-xl")}
+        editorContentClassName="overflow-auto"
         output="html"
-        placeholder="Type your description here..."
+        placeholder="Add a caption…"
         editable={true}
-        editorClassName="focus:outline-hidden px-5 py-4 h-full"
+        editorClassName="focus:outline-hidden px-5 py-4"
       />
     ),
   },
   {
-    name: "Tiptap Mini Ready 3",
-    className: "col-span-3",
+    name: "Article",
+    description: "The full editor, still negotiating with the Alps.",
     background: (
       <MinimalTiptapThree
         value={Content}
         throttleDelay={3000}
-        className={cn("h-full min-h-56 w-full min-w-0 rounded-xl")}
-        editorContentClassName="overflow-auto h-full"
+        className={cn("h-auto min-h-56 w-full min-w-0 rounded-xl")}
+        editorContentClassName="overflow-auto"
         output="json"
-        onChange={(value) => {
-          console.log("Updated value:", value)
-        }}
         placeholder="This is your placeholder..."
         editable={true}
-        editorClassName="focus:outline-hidden px-5 py-4 h-full"
-      />
-    ),
-  },
-  {
-    name: "Tiptap Mini Ready 4",
-    className: "col-span-3",
-    background: (
-      <MinimalTiptapEditor
-        value={markdownContent}
-        throttleDelay={2000}
-        className={cn("h-full min-h-56 w-full min-w-0 rounded-xl")}
-        editorContentClassName="overflow-auto h-full"
-        output="markdown"
-        onChange={(value) => {
-          console.log("Updated value:", value)
-        }}
-        placeholder="Type your description here..."
-        editable={true}
-        editorClassName="focus:outline-hidden px-5 py-4 h-full"      
+        editorClassName="focus:outline-hidden px-5 py-4"
       />
     ),
   },
@@ -80,9 +64,20 @@ const features = [
 export function BentoMinimalTiptap() {
   return (
     <BentoGrid>
-      {features.map((feature, idx) => (
-        <BentoCard key={idx} {...feature} />
+      {features.map((feature) => (
+        <BentoCard key={feature.name} {...feature} />
       ))}
+      <div className="col-span-full flex items-center gap-4 pt-2">
+        <h2 className="text-muted-foreground text-sm font-medium tracking-wide uppercase">
+          Templates
+        </h2>
+        <div className="bg-border h-px flex-1" />
+      </div>
+      <BentoCard
+        name="Notion-like"
+        description="Demo template (no TipTap Cloud AI/collab). Slash menu and a floating toolbar."
+        background={<NotionLikeEditor />}
+      />
     </BentoGrid>
   )
 }

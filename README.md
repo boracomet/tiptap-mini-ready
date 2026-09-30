@@ -1,8 +1,16 @@
+![Tiptap Mini Ready](docs/readme-banner.jpg)
+
 # Tiptap Mini Ready
 
-Tiptap Mini Ready is a lightweight rich text editor for React, styled with [shadcn/ui](https://ui.shadcn.com). It is maintained by [Bora Ata Türkoğlu](https://github.com/boracomet).
+A modern TipTap editor for React.
+
+TipTap v3 · Customizable · Ready to use · React
+
+Maintained by [Bora Ata Türkoğlu](https://github.com/boracomet). Styled with [shadcn/ui](https://ui.shadcn.com).
 
 Live demo: [https://boracomet.github.io/tiptap-mini-ready/](https://boracomet.github.io/tiptap-mini-ready/)
+
+The demo stacks Comment, Gallery, and Article. Under Templates, the Notion-like block is a demo template (no TipTap Cloud AI/collab): a slash menu and a floating toolbar.
 
 Repository: [https://github.com/boracomet/tiptap-mini-ready](https://github.com/boracomet/tiptap-mini-ready)
 

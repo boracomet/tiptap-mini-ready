@@ -1,0 +1,74 @@
+{
+  "type": "doc",
+  "content": [
+    {
+      "type": "heading",
+      "attrs": { "level": 1 },
+      "content": [{ "type": "text", "text": "Images" }]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        {
+          "type": "text",
+          "text": "Heidi's postcard stack, filed in the order the goats approved."
+        }
+      ]
+    },
+    {
+      "type": "image",
+      "attrs": {
+        "src": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/76/038_Swiss_Alps_seen_from_Dent_de_Vaulion_Photo_by_Giles_Laurent.jpg/960px-038_Swiss_Alps_seen_from_Dent_de_Vaulion_Photo_by_Giles_Laurent.jpg",
+        "alt": "Swiss Alps seen from Dent de Vaulion",
+        "title": "The Alps, halfway across the page and very aware of it",
+        "width": 560
+      }
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        {
+          "type": "text",
+          "marks": [{ "type": "italic" }],
+          "text": "Half the frame, all of the drama. The mountains insisted on being centered."
+        }
+      ]
+    },
+    {
+      "type": "image",
+      "attrs": {
+        "src": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/92/044_Lake_Geneva_and_Swiss_Alps_Photo_by_Giles_Laurent.jpg/960px-044_Lake_Geneva_and_Swiss_Alps_Photo_by_Giles_Laurent.jpg",
+        "alt": "Lake Geneva with the Swiss Alps behind it",
+        "title": "Lake Geneva"
+      }
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        {
+          "type": "text",
+          "marks": [{ "type": "italic" }],
+          "text": "Lake Geneva, holding still so the Alps can take the credit."
+        }
+      ]
+    },
+    {
+      "type": "image",
+      "attrs": {
+        "src": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/ea/002_Wild_Alpine_Ibex_Swiss_Alps_and_Creux_du_Van_Photo_by_Giles_Laurent.jpg/960px-002_Wild_Alpine_Ibex_Swiss_Alps_and_Creux_du_Van_Photo_by_Giles_Laurent.jpg",
+        "alt": "An alpine ibex in the Swiss Alps",
+        "title": "Alpine ibex"
+      }
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        {
+          "type": "text",
+          "marks": [{ "type": "italic" }],
+          "text": "Local management. Heidi does not negotiate with the horns."
+        }
+      ]
+    }
+  ]
+}
