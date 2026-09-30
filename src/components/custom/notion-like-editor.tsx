@@ -1,6 +1,7 @@
 import "@/components/minimal-tiptap/styles/index.css"
 
 import * as React from "react"
+import { createPortal } from "react-dom"
 import type { Editor } from "@tiptap/react"
 import { EditorContent, useEditor } from "@tiptap/react"
 import { BubbleMenu } from "@tiptap/react/menus"
@@ -22,6 +23,8 @@ import {
 } from "@radix-ui/react-icons"
 import {
   Code,
+  ChevronDown,
+  ChevronUp,
   GripVertical,
   Heading1,
   Heading2,
@@ -219,6 +222,51 @@ const stepIndex = (items: SlashItem[], start: number, direction: 1 | -1) => {
 
 type DragSource = { pos: number; size: number }
 
+type TopLevelBlock = { index: number; pos: number; size: number }
+
+const topLevelBlocks = (doc: Editor["state"]["doc"]): TopLevelBlock[] => {
+  const blocks: TopLevelBlock[] = []
+  doc.forEach((node, offset) => {
+    blocks.push({ index: blocks.length, pos: offset, size: node.nodeSize })
+  })
+  return blocks
+}
+
+const blockAt = (doc: Editor["state"]["doc"], pos: number) => {
+  return topLevelBlocks(doc).find((block) => pos >= block.pos && pos < block.pos + block.size) ?? null
+}
+
+const moveTopLevelBlock = (editor: Editor, pos: number, direction: -1 | 1) => {
+  const { doc } = editor.state
+  const current = blockAt(doc, pos)
+  if (!current) return false
+
+  const blocks = topLevelBlocks(doc)
+  const target = blocks[current.index + direction]
+  if (!target) return false
+
+  const node = doc.nodeAt(current.pos)
+  if (!node) return false
+
+  const range = NodeRangeSelection.create(doc, current.pos, current.pos + node.nodeSize)
+  const moved = range.content().content.firstChild
+  if (!moved) return false
+
+  const tr = editor.state.tr
+  if (direction < 0) {
+    tr.insert(target.pos, moved)
+    const mapped = tr.mapping.map(current.pos)
+    tr.delete(mapped, mapped + moved.nodeSize)
+  } else {
+    tr.delete(current.pos, current.pos + node.nodeSize)
+    const insertAt = tr.mapping.map(target.pos + target.size)
+    tr.insert(insertAt, moved)
+  }
+
+  editor.view.dispatch(tr)
+  return true
+}
+
 const topLevelFromPoint = (view: Editor["view"], x: number, y: number) => {
   const elements = view.root.elementsFromPoint(x, y)
   for (const element of elements) {
@@ -255,10 +303,17 @@ const BlockGutter = ({
   dragSourceRef: React.MutableRefObject<DragSource | null>
 }) => {
   const [element, setElement] = React.useState<HTMLDivElement | null>(null)
+  const [blockPos, setBlockPos] = React.useState(-1)
+  const [moveMenu, setMoveMenu] = React.useState<{ top: number; left: number } | null>(null)
   const posRef = React.useRef(-1)
   const addPressed = React.useRef(false)
+  const pointerRef = React.useRef<{ x: number; y: number } | null>(null)
   const onAddRef = React.useRef(onAdd)
   onAddRef.current = onAdd
+  const currentBlock = blockPos >= 0 ? blockAt(editor.state.doc, blockPos) : null
+  const blockCount = editor.state.doc.childCount
+  const canMoveUp = Boolean(currentBlock && currentBlock.index > 0)
+  const canMoveDown = Boolean(currentBlock && currentBlock.index < blockCount - 1)
 
   React.useEffect(() => {
     if (!element || editor.isDestroyed) return
@@ -311,6 +366,7 @@ const BlockGutter = ({
       },
       onNodeChange: ({ pos }) => {
         posRef.current = pos
+        setBlockPos(pos)
       },
     })
     element.addEventListener("dragstart", ensureDragData)
@@ -325,6 +381,88 @@ const BlockGutter = ({
       plugin.unbind()
     }
   }, [dragSourceRef, editor, element])
+
+  React.useEffect(() => {
+    if (!moveMenu || editor.isDestroyed) return
+    editor.view.dispatch(editor.state.tr.setMeta("lockDragHandle", true))
+    if (element) element.style.visibility = "visible"
+    return () => {
+      if (editor.isDestroyed) return
+      editor.view.dispatch(editor.state.tr.setMeta("lockDragHandle", false))
+    }
+  }, [editor, element, moveMenu])
+
+  React.useEffect(() => {
+    if (!moveMenu) return
+    const onPointerDown = (event: MouseEvent) => {
+      const target = event.target
+      if (!(target instanceof Element)) return
+      if (target.closest("[data-move-menu], [data-drag-handle]")) return
+      setMoveMenu(null)
+    }
+    document.addEventListener("mousedown", onPointerDown)
+    return () => document.removeEventListener("mousedown", onPointerDown)
+  }, [moveMenu])
+
+  const moveMenuNode = moveMenu
+    ? createPortal(
+        <div
+          data-move-menu
+          role="menu"
+          aria-label="Move block"
+          className="bg-popover text-popover-foreground fixed z-50 w-40 rounded-md border p-1 shadow-md"
+          style={{ top: moveMenu.top, left: moveMenu.left }}
+        >
+          <button
+            type="button"
+            role="menuitem"
+            data-move-up
+            disabled={!canMoveUp}
+            className="hover:bg-accent flex w-full items-center gap-2 rounded px-2 py-1.5 text-left text-sm disabled:cursor-not-allowed disabled:opacity-40"
+            onMouseDown={(event) => {
+              event.preventDefault()
+              event.stopPropagation()
+              addPressed.current = true
+            }}
+            onClick={(event) => {
+              event.preventDefault()
+              event.stopPropagation()
+              addPressed.current = false
+              if (!canMoveUp) return
+              moveTopLevelBlock(editor, posRef.current, -1)
+              setMoveMenu(null)
+            }}
+          >
+            <ChevronUp className="size-4" />
+            Move up
+          </button>
+          <button
+            type="button"
+            role="menuitem"
+            data-move-down
+            disabled={!canMoveDown}
+            className="hover:bg-accent flex w-full items-center gap-2 rounded px-2 py-1.5 text-left text-sm disabled:cursor-not-allowed disabled:opacity-40"
+            onMouseDown={(event) => {
+              event.preventDefault()
+              event.stopPropagation()
+              addPressed.current = true
+            }}
+            onClick={(event) => {
+              event.preventDefault()
+              event.stopPropagation()
+              addPressed.current = false
+              if (!canMoveDown) return
+              moveTopLevelBlock(editor, posRef.current, 1)
+              setMoveMenu(null)
+            }}
+          >
+            <ChevronDown className="size-4" />
+            Move down
+          </button>
+        </div>,
+        document.body
+      )
+    : null
 
   return (
     <div
@@ -357,13 +495,31 @@ const BlockGutter = ({
       >
         <Plus className="size-4" />
       </button>
-      <span
-        aria-hidden
-        className="flex size-6 cursor-grab items-center justify-center rounded active:cursor-grabbing"
-        title="Drag to move"
+      <button
+        type="button"
+        data-drag-handle
+        aria-haspopup="menu"
+        aria-expanded={moveMenu ? true : undefined}
+        aria-label="Drag to move, or open Move up and Move down"
+        title="Drag to move. Click for Move up and Move down."
+        className="hover:bg-accent hover:text-accent-foreground flex size-6 cursor-grab items-center justify-center rounded active:cursor-grabbing"
+        draggable={false}
+        onMouseDown={(event) => {
+          pointerRef.current = { x: event.clientX, y: event.clientY }
+        }}
+        onMouseUp={(event) => {
+          const start = pointerRef.current
+          pointerRef.current = null
+          if (!start || !element) return
+          const moved = Math.hypot(event.clientX - start.x, event.clientY - start.y)
+          if (moved > 4) return
+          const rect = element.getBoundingClientRect()
+          setMoveMenu({ top: rect.bottom + 4, left: rect.left })
+        }}
       >
         <GripVertical className="size-4" />
-      </span>
+      </button>
+      {moveMenuNode}
     </div>
   )
 }
@@ -752,7 +908,7 @@ export const NotionLikeEditor = () => {
       const target = event.target
       if (!(target instanceof Node)) return
       if (menuElementRef.current?.contains(target)) return
-      if (target instanceof Element && target.closest("[data-notion-gutter]")) return
+      if (target instanceof Element && target.closest("[data-notion-gutter], [data-move-menu]")) return
 
       const current = editorRef.current
       const range = menuRef.current.match

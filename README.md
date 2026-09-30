@@ -10,7 +10,7 @@ Maintained by [Bora Ata Türkoğlu](https://github.com/boracomet). Styled with [
 
 Live demo: [https://boracomet.github.io/tiptap-mini-ready/](https://boracomet.github.io/tiptap-mini-ready/)
 
-The demo stacks Comment, Gallery, and Article. Under Templates, Notion-like is a local page: each block has a + and a drag handle, and the slash menu filters text, headings, lists, todos, quotes, code, dividers, and images. It is not the official TipTap Notion-like template. Cloud collaboration stays off, and the AI commands are disabled. See [Notion-like template](#notion-like-template).
+The demo stacks Comment, Gallery, and Article. Under Templates, Notion-like is a local page: each block has a + and a drag handle, the handle opens Move up and Move down, and the slash menu filters text, headings, lists, todos, quotes, code, dividers, and images. It is not the official TipTap Notion-like template. Cloud collaboration stays off, and the AI commands are disabled. See [Notion-like template](#notion-like-template).
 
 Repository: [https://github.com/boracomet/tiptap-mini-ready](https://github.com/boracomet/tiptap-mini-ready)
 
@@ -174,7 +174,7 @@ Full parity with the docs demo adds live cursors, presence, and the AI menu. For
 
 Render the licensed component with a unique room, for example `<NotionEditor room="my-document-room" placeholder="Start writing..." />`. Example JWTs from a TipTap Cloud account expire quickly. Production should mint JWTs on a server. None of those values are stored in this repo.
 
-Without them the demo stays local. Hover any block for the add and drag controls, then drag to reorder. The slash menu has a filter and the block types above. Continue Writing and Ask AI are visible and disabled until `VITE_TIPTAP_AI_TOKEN` is set. Dark and light follow the page theme switch. The open-source drag handle loads `@tiptap/extension-collaboration` and `yjs` as libraries only. This editor does not open a collaboration provider.
+Without them the demo stays local. Hover any block for the add and drag controls. Drag a block to reorder it, or open the handle menu and choose Move up or Move down. Those commands stop at the first and last block. The slash menu has a filter and the block types above. Continue Writing and Ask AI are visible and disabled until `VITE_TIPTAP_AI_TOKEN` is set. Dark and light follow the page theme switch. The open-source drag handle loads `@tiptap/extension-collaboration` and `yjs` as libraries only. This editor does not open a collaboration provider.
 
 ## Demo deployment
 
