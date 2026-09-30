@@ -6,6 +6,40 @@ A modern TipTap editor for React.
 
 TipTap v3 · Customizable · Ready to use · React
 
+## Screenshots
+
+Light mode on the [live demo](https://boracomet.github.io/tiptap-mini-ready/).
+
+### Overview
+
+![Overview of the Tiptap Mini Ready demo](docs/screenshots/overview-light.jpg)
+
+The page stacks Comment, Gallery, and Article under the Tiptap Mini Ready hero.
+
+### Comment
+
+![Comment editor](docs/screenshots/comment-light.jpg)
+
+A short comment field. The toolbar sits under the text.
+
+### Gallery
+
+![Gallery editor with aligned images](docs/screenshots/gallery-light.jpg)
+
+Captions and images, aligned left, center, or right.
+
+### Article
+
+![Heidi article in the full editor](docs/screenshots/article-light.jpg)
+
+The Heidi article in the full editor.
+
+### Notion-like
+
+![Notion-like block editor](docs/screenshots/notion-like-light.jpg)
+
+A local block page under Templates. It is not TipTap Cloud.
+
 Maintained by [Bora Ata Türkoğlu](https://github.com/boracomet). Styled with [shadcn/ui](https://ui.shadcn.com).
 
 Live demo: [https://boracomet.github.io/tiptap-mini-ready/](https://boracomet.github.io/tiptap-mini-ready/)
