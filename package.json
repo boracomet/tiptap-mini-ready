@@ -24,6 +24,7 @@
     "host-registry": "npx http-server registry"
   },
   "dependencies": {
+    "@floating-ui/dom": "1.7.4",
     "@hookform/resolvers": "^3.10.0",
     "@radix-ui/react-context-menu": "^2.2.16",
     "@radix-ui/react-dialog": "^1.1.15",

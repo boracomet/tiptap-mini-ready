@@ -14,6 +14,7 @@ import {
   dragHandlePluginDefaultKey,
 } from "@tiptap/extension-drag-handle"
 import { NodeRangeSelection } from "@tiptap/extension-node-range"
+import { autoUpdate, computePosition, flip, offset, shift } from "@floating-ui/dom"
 import { Image } from "@/components/minimal-tiptap/extensions/image"
 import { MeasuredContainer } from "@/components/minimal-tiptap/components/measured-container"
 import {
@@ -195,14 +196,6 @@ const slashMatch = (editor: Editor): SlashMatch | null => {
     to: $from.pos,
     query,
   }
-}
-
-const menuCoordinates = (anchor: { top: number; bottom: number; left: number }) => {
-  const menuHeight = 400
-  const below = anchor.bottom + 8
-  const top =
-    below + menuHeight > window.innerHeight ? Math.max(8, anchor.top - menuHeight - 8) : below
-  return { top, left: anchor.left }
 }
 
 const firstEnabledIndex = (items: SlashItem[]) => {
@@ -713,7 +706,6 @@ export const NotionLikeEditor = () => {
   const [forcedOpen, setForcedOpen] = React.useState(false)
   const [filter, setFilter] = React.useState("")
   const [index, setIndex] = React.useState(0)
-  const [coords, setCoords] = React.useState({ top: 0, left: 0 })
   const menuRef = React.useRef({
     open: false,
     index: 0,
@@ -758,6 +750,43 @@ export const NotionLikeEditor = () => {
     items: filtered,
     match,
   }
+
+  React.useLayoutEffect(() => {
+    if (!menuOpen) return
+    const menu = menuElementRef.current
+    const editor = editorRef.current
+    if (!menu || !editor || editor.isDestroyed) return
+
+    const reference = {
+      contextElement: editor.view.dom,
+      getBoundingClientRect() {
+        const pos = menuRef.current.match?.from ?? editor.state.selection.from
+        try {
+          const coords = editor.view.coordsAtPos(pos)
+          return new DOMRect(
+            coords.left,
+            coords.top,
+            Math.max(0, coords.right - coords.left),
+            Math.max(0, coords.bottom - coords.top),
+          )
+        } catch {
+          return new DOMRect()
+        }
+      },
+    }
+
+    return autoUpdate(reference, menu, () => {
+      void computePosition(reference, menu, {
+        placement: "bottom-start",
+        strategy: "fixed",
+        middleware: [offset(4), flip({ padding: 8 }), shift({ padding: 8 })],
+      }).then(({ x, y }) => {
+        if (menuElementRef.current !== menu) return
+        menu.style.left = `${x}px`
+        menu.style.top = `${y}px`
+      })
+    })
+  }, [menuOpen, match?.from])
 
   const extensions = React.useMemo(
     () => [
@@ -868,12 +897,10 @@ export const NotionLikeEditor = () => {
     const insertAt = pos + node.nodeSize
     forcedRef.current = true
     current.chain().insertContentAt(insertAt, { type: "paragraph" }).setTextSelection(insertAt + 1).run()
-    const position = current.view.coordsAtPos(insertAt + 1)
     setForcedOpen(true)
     setMatch(null)
     setFilter("")
     setIndex(firstEnabledIndex(slashItems))
-    setCoords(menuCoordinates(position))
   }, [])
 
   React.useEffect(() => {
@@ -886,8 +913,6 @@ export const NotionLikeEditor = () => {
         setForcedOpen(false)
         setMatch(next)
         if (!filterFocused.current) setFilter(next.query)
-        const position = editor.view.coordsAtPos(next.from)
-        setCoords(menuCoordinates(position))
         return
       }
 
@@ -1007,13 +1032,13 @@ export const NotionLikeEditor = () => {
           </ToolbarButton>
         </div>
       </BubbleMenu>
-      {menuOpen ? (
+      {menuOpen
+        ? createPortal(
         <div
           ref={menuElementRef}
           role="listbox"
           aria-label="Slash commands"
           className="bg-popover text-popover-foreground fixed z-50 w-72 rounded-lg border p-2 shadow-lg"
-          style={{ top: coords.top, left: coords.left }}
         >
           <label className="bg-muted mb-2 flex items-center gap-1 rounded-md px-2">
             <span className="text-muted-foreground text-sm" aria-hidden>
@@ -1077,7 +1102,8 @@ export const NotionLikeEditor = () => {
               )
             })}
           </div>
-        </div>
+        </div>,
+        document.body
       ) : null}
     </MeasuredContainer>
   )
