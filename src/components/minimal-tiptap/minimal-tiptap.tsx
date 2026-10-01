@@ -26,11 +26,11 @@ export interface MinimalTiptapProps extends Omit<
 }
 
 const Toolbar = ({ editor }: { editor: Editor }) => (
-  <div className="border-border flex h-12 shrink-0 overflow-x-auto border-b p-2">
-    <div className="flex w-max items-center gap-px">
+  <div className="border-border bg-background flex h-12 min-w-0 w-full shrink-0 touch-pan-x overflow-x-auto overscroll-x-contain border-b p-2 dark:border-input">
+    <div className="flex w-max items-center gap-0.5">
       <SectionOne editor={editor} activeLevels={[1, 2, 3, 4, 5, 6]} />
 
-      <Separator orientation="vertical" className="mx-2" />
+      <Separator orientation="vertical" className="mx-2 dark:bg-input" />
 
       <SectionTwo
         editor={editor}
@@ -45,11 +45,11 @@ const Toolbar = ({ editor }: { editor: Editor }) => (
         mainActionCount={3}
       />
 
-      <Separator orientation="vertical" className="mx-2" />
+      <Separator orientation="vertical" className="mx-2 dark:bg-input" />
 
       <SectionThree editor={editor} />
 
-      <Separator orientation="vertical" className="mx-2" />
+      <Separator orientation="vertical" className="mx-2 dark:bg-input" />
 
       <SectionFour
         editor={editor}
@@ -57,7 +57,7 @@ const Toolbar = ({ editor }: { editor: Editor }) => (
         mainActionCount={0}
       />
 
-      <Separator orientation="vertical" className="mx-2" />
+      <Separator orientation="vertical" className="mx-2 dark:bg-input" />
 
       <SectionFive
         editor={editor}
@@ -116,7 +116,7 @@ export const MainMinimalTiptapEditor = ({
       as="div"
       name="editor"
       className={cn(
-        "border-input min-data-[orientation=vertical]:h-72 flex h-auto w-full flex-col rounded-md border shadow-xs",
+        "border-input bg-background min-data-[orientation=vertical]:h-72 flex h-auto w-full flex-col rounded-md border shadow-xs",
         "focus-within:border-ring focus-within:ring-ring/50 focus-within:ring-[3px]",
         className
       )}

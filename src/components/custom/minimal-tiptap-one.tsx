@@ -18,8 +18,8 @@ export interface MinimalTiptapProps
 }
 
 const Toolbar = ({ editor }: { editor: Editor }) => (
-  <div className="border-border flex h-12 shrink-0 overflow-x-auto border-t p-2">
-    <div className="flex w-max items-center gap-px">
+  <div className="border-border bg-background flex h-12 min-w-0 w-full shrink-0 touch-pan-x overflow-x-auto overscroll-x-contain border-t p-2 dark:border-input">
+    <div className="flex w-max items-center gap-0.5">
       <SectionTwo
         editor={editor}
         activeActions={["bold", "italic", "underline", "strikethrough", "code"]}
@@ -51,7 +51,7 @@ export const MinimalTiptapOne = ({
       as="div"
       name="editor"
       className={cn(
-        "border-input flex h-auto min-h-72 w-full flex-col rounded-md border shadow-xs",
+        "border-input bg-background flex h-auto min-h-72 w-full flex-col rounded-md border shadow-xs",
         "focus-within:border-ring focus-within:ring-ring/50 focus-within:ring-[3px]",
         className
       )}

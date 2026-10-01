@@ -539,14 +539,14 @@ const BlockGutter = ({
       ref={setElement}
       data-notion-gutter
       aria-label="Block controls"
-      className="text-muted-foreground z-30 flex items-start"
+      className="text-muted-foreground z-30 flex items-start gap-0.5 rounded-md border border-transparent bg-background/90 p-0.5 shadow-sm dark:border-border dark:bg-card/95 dark:text-foreground/75 dark:shadow-none"
       style={{ visibility: "hidden", position: "absolute" }}
     >
       <button
         type="button"
         data-add-block
         aria-label="Add a block below"
-        className="hover:bg-accent hover:text-accent-foreground flex size-6 items-center justify-center rounded"
+        className="hover:bg-accent hover:text-accent-foreground dark:hover:bg-accent/80 flex size-6 items-center justify-center rounded"
         draggable={false}
         onMouseDown={(event) => {
           event.preventDefault()
@@ -573,7 +573,7 @@ const BlockGutter = ({
         aria-expanded={moveMenu ? true : undefined}
         aria-label="Drag to move, or open Move up and Move down"
         title="Drag to move. Click for Move up and Move down."
-        className="hover:bg-accent hover:text-accent-foreground flex size-6 cursor-grab items-center justify-center rounded active:cursor-grabbing"
+        className="hover:bg-accent hover:text-accent-foreground dark:hover:bg-accent/80 flex size-6 cursor-grab items-center justify-center rounded active:cursor-grabbing"
         onMouseDown={(event) => {
           pointerRef.current = { x: event.clientX, y: event.clientY }
         }}
@@ -1086,7 +1086,7 @@ export const NotionLikeEditor = () => {
     <MeasuredContainer
       as="div"
       name="editor"
-      className="border-input relative flex min-h-56 w-full flex-col rounded-xl border shadow-xs"
+      className="border-input bg-background relative flex min-h-56 w-full flex-col rounded-xl border shadow-xs"
     >
       <EditorContent editor={editor} className="notion-like-surface minimal-tiptap-editor relative" />
       <BlockGutter editor={editor} onAdd={addBlockBelow} dragSourceRef={dragSourceRef} />
@@ -1101,7 +1101,7 @@ export const NotionLikeEditor = () => {
           return current.state.doc.textBetween(from, to, " ").length > 0
         }}
       >
-        <div className="bg-background flex items-center gap-0.5 rounded-md border p-1 shadow-md">
+        <div className="bg-background flex items-center gap-0.5 rounded-md border border-border p-1 shadow-md dark:bg-card">
           <ToolbarButton
             tooltip="Bold"
             isActive={editor.isActive("bold")}
