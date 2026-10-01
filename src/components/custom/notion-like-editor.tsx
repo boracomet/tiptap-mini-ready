@@ -704,6 +704,8 @@ const seed = {
 
 export const NotionLikeEditor = () => {
   const [match, setMatch] = React.useState<SlashMatch | null>(null)
+  const [linkPopoverOpen, setLinkPopoverOpen] = React.useState(false)
+  const linkPopoverClosing = React.useRef(0)
   const [forcedOpen, setForcedOpen] = React.useState(false)
   const [filter, setFilter] = React.useState("")
   const [index, setIndex] = React.useState(0)
@@ -1014,6 +1016,7 @@ export const NotionLikeEditor = () => {
       <BubbleMenu
         editor={editor}
         pluginKey="notionFloatingToolbar"
+        updateDelay={10}
         shouldShow={({ editor: current, from, to }) => {
           if (!current.isEditable) return false
           if (current.isActive("link")) return true
@@ -1043,7 +1046,25 @@ export const NotionLikeEditor = () => {
           >
             <StrikethroughIcon className="size-4" />
           </ToolbarButton>
-          <LinkEditPopover editor={editor} />
+          <LinkEditPopover
+            editor={editor}
+            open={linkPopoverOpen}
+            onOpenChange={(next) => {
+              if (!next) {
+                const generation = linkPopoverClosing.current + 1
+                linkPopoverClosing.current = generation
+                setLinkPopoverOpen(false)
+                window.setTimeout(() => {
+                  if (linkPopoverClosing.current !== generation) return
+                  setLinkPopoverOpen(false)
+                  linkPopoverClosing.current = 0
+                }, 50)
+                return
+              }
+              if (linkPopoverClosing.current !== 0) return
+              setLinkPopoverOpen(true)
+            }}
+          />
         </div>
       </BubbleMenu>
       {menuOpen

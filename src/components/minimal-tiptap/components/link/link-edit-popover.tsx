@@ -14,10 +14,29 @@ import { setEditorLink } from "./set-editor-link"
 
 interface LinkEditPopoverProps extends VariantProps<typeof toggleVariants> {
   editor: Editor
+  open?: boolean
+  onOpenChange?: (open: boolean) => void
 }
 
-const LinkEditPopover = ({ editor, size, variant }: LinkEditPopoverProps) => {
-  const [open, setOpen] = React.useState(false)
+const LinkEditPopover = ({
+  editor,
+  size,
+  variant,
+  open: openProp,
+  onOpenChange,
+}: LinkEditPopoverProps) => {
+  const [uncontrolledOpen, setUncontrolledOpen] = React.useState(false)
+  const open = openProp ?? uncontrolledOpen
+  const onOpenChangeRef = React.useRef(onOpenChange)
+  onOpenChangeRef.current = onOpenChange
+
+  const setOpen = React.useCallback(
+    (next: boolean) => {
+      if (openProp === undefined) setUncontrolledOpen(next)
+      onOpenChangeRef.current?.(next)
+    },
+    [openProp]
+  )
 
   const { from, to } = editor.state.selection
   const text = editor.state.doc.textBetween(from, to, " ")
@@ -25,9 +44,12 @@ const LinkEditPopover = ({ editor, size, variant }: LinkEditPopoverProps) => {
   const onSetLink = React.useCallback(
     (url: string, text?: string, openInNewTab?: boolean) => {
       const applied = setEditorLink(editor, url, text, openInNewTab)
-      if (applied) setOpen(false)
+      if (!applied) return
+      setOpen(false)
+      // The bubble menu transaction can remount this popover before the close commits.
+      window.setTimeout(() => setOpen(false), 0)
     },
-    [editor]
+    [editor, setOpen]
   )
 
   return (
