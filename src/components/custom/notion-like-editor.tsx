@@ -17,6 +17,7 @@ import { NodeRangeSelection } from "@tiptap/extension-node-range"
 import { autoUpdate, computePosition, flip, offset, shift } from "@floating-ui/dom"
 import { Image } from "@/components/minimal-tiptap/extensions/image"
 import { MeasuredContainer } from "@/components/minimal-tiptap/components/measured-container"
+import { LinkEditPopover } from "@/components/minimal-tiptap/components/link/link-edit-popover"
 import {
   FontBoldIcon,
   FontItalicIcon,
@@ -797,6 +798,16 @@ export const NotionLikeEditor = () => {
         blockquote: { HTMLAttributes: { class: "block-node" } },
         paragraph: { HTMLAttributes: { class: "text-node" } },
         trailingNode: { node: "paragraph", notAfter: ["paragraph"] },
+        link: {
+          enableClickSelection: true,
+          openOnClick: false,
+          autolink: true,
+          defaultProtocol: "https",
+          protocols: ["http", "https", "mailto", "tel", "sms", "fax"],
+          HTMLAttributes: {
+            class: "link",
+          },
+        },
       }),
       TaskList.configure({
         HTMLAttributes: { class: "task-list-node" },
@@ -1004,7 +1015,9 @@ export const NotionLikeEditor = () => {
         editor={editor}
         pluginKey="notionFloatingToolbar"
         shouldShow={({ editor: current, from, to }) => {
-          if (!current.isEditable || from === to) return false
+          if (!current.isEditable) return false
+          if (current.isActive("link")) return true
+          if (from === to) return false
           return current.state.doc.textBetween(from, to, " ").length > 0
         }}
       >
@@ -1030,6 +1043,7 @@ export const NotionLikeEditor = () => {
           >
             <StrikethroughIcon className="size-4" />
           </ToolbarButton>
+          <LinkEditPopover editor={editor} />
         </div>
       </BubbleMenu>
       {menuOpen
