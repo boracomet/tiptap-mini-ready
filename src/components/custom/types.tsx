@@ -13,7 +13,8 @@ const commentSeed =
 const features = [
   {
     name: "Comment",
-    description: "Add a comment",
+    description:
+      "Write below, then format from the bar under the text. Select a phrase and open the link bubble.",
     background: (
       <MinimalTiptapOne
         value={commentSeed}
@@ -29,7 +30,8 @@ const features = [
   },
   {
     name: "Gallery",
-    description: "Captions for a Heidi trip through the Alps.",
+    description:
+      "Captions for a Heidi trip through the Alps. On a narrow screen, swipe the toolbar sideways; try image align.",
     background: (
       <MinimalTiptapEditor
         value={Gallery}
@@ -45,7 +47,8 @@ const features = [
   },
   {
     name: "Article",
-    description: "The full editor, still negotiating with the Alps.",
+    description:
+      "The Heidi article scrolls inside this card. Use the top toolbar for headings, lists, and more.",
     background: (
       <MinimalTiptapThree
         value={Content}
@@ -77,7 +80,7 @@ export function BentoMinimalTiptap() {
       </div>
       <BentoCard
         name="Notion-like"
-        description="Local demo (no TipTap Cloud AI or collaboration). Hover a block for +, drag, and Move up or Move down. AI slash commands stay off."
+        description="Local demo (no TipTap Cloud). Hover a block for + and drag, or Move up / Move down. Type / for the slash menu; select text for the bubble link. AI stays off."
         background={<NotionLikeEditor />}
       />
     </BentoGrid>

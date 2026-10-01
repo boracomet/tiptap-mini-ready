@@ -8,7 +8,7 @@ TipTap v3 · Customizable · Ready to use · React
 
 ## Screenshots
 
-Light mode on the [live demo](https://boracomet.github.io/tiptap-mini-ready/).
+Light mode on the [live demo](https://boracomet.github.io/tiptap-mini-ready/). Try Comment for the link bubble, Gallery for toolbar scroll and image align, Article for in-card scrolling, and Notion-like for gutter +/drag and `/`.
 
 ### Overview
 
