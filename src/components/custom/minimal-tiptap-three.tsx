@@ -25,7 +25,7 @@ export interface MinimalTiptapProps
 const Toolbar = ({ editor }: { editor: Editor }) => (
   <div className="border-border flex h-12 shrink-0 overflow-x-auto border-b p-2">
     <div className="flex w-max items-center gap-px">
-      <SectionOne editor={editor} activeLevels={[1, 2, 3]} variant="outline" />
+      <SectionOne editor={editor} activeLevels={[1, 2, 3]} />
 
       <Separator orientation="vertical" className="mx-2" />
 
@@ -40,12 +40,11 @@ const Toolbar = ({ editor }: { editor: Editor }) => (
           "clearFormatting",
         ]}
         mainActionCount={5}
-        variant="outline"
       />
 
       <Separator orientation="vertical" className="mx-2" />
 
-      <SectionThree editor={editor} variant="outline" />
+      <SectionThree editor={editor} />
 
       <Separator orientation="vertical" className="mx-2" />
 
@@ -53,7 +52,6 @@ const Toolbar = ({ editor }: { editor: Editor }) => (
         editor={editor}
         activeActions={["bulletList", "orderedList"]}
         mainActionCount={2}
-        variant="outline"
       />
 
       <Separator orientation="vertical" className="mx-2" />
@@ -62,7 +60,6 @@ const Toolbar = ({ editor }: { editor: Editor }) => (
         editor={editor}
         activeActions={["blockquote", "codeBlock", "horizontalRule"]}
         mainActionCount={3}
-        variant="outline"
       />
     </div>
   </div>

@@ -50,8 +50,10 @@ const features = [
       <MinimalTiptapThree
         value={Content}
         throttleDelay={3000}
-        className={cn("h-auto min-h-56 w-full min-w-0 rounded-xl")}
-        editorContentClassName="overflow-auto"
+        className={cn(
+          "h-[min(42rem,70vh)] max-h-[70vh] min-h-0 w-full min-w-0 overflow-hidden rounded-xl"
+        )}
+        editorContentClassName="min-h-0 flex-1 overflow-auto"
         output="json"
         placeholder="This is your placeholder..."
         editable={true}
