@@ -208,7 +208,7 @@ Full parity with the docs demo adds live cursors, presence, and the AI menu. For
 
 Render the licensed component with a unique room, for example `<NotionEditor room="my-document-room" placeholder="Start writing..." />`. Example JWTs from a TipTap Cloud account expire quickly. Production should mint JWTs on a server. None of those values are stored in this repo.
 
-Without them the demo stays local. Hover any block for the add and drag controls. Drag a block to reorder it, or open the handle menu and choose Move up or Move down. Those commands stop at the first and last block. The slash menu has a filter and the block types above. Continue Writing and Ask AI are visible and disabled until `VITE_TIPTAP_AI_TOKEN` is set. Dark and light follow the page theme switch. The open-source drag handle statically imports `@tiptap/extension-collaboration` and `@tiptap/y-tiptap` (and thus `yjs`) as libraries only, so those packages stay installed. This editor does not open a collaboration provider.
+Without them the demo stays local. Hover any block for the add and drag controls. Drag a block to reorder it, or open the handle menu and choose Move up or Move down. Those commands stop at the first and last block. The slash menu has a filter and the block types above. Continue Writing and Ask AI are visible and disabled until `VITE_TIPTAP_AI_TOKEN` is set. Dark and light follow the page theme switch. Block add, drag reorder, and Move up / Move down use a custom gutter and `@tiptap/extension-node-range` only. This demo does not depend on `@tiptap/extension-drag-handle`, `@tiptap/extension-collaboration`, `@tiptap/y-tiptap`, or `yjs`, and it does not open a collaboration provider.
 
 ## Demo deployment
 

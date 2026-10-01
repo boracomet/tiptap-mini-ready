@@ -8,11 +8,6 @@ import { BubbleMenu } from "@tiptap/react/menus"
 import { StarterKit } from "@tiptap/starter-kit"
 import { TaskItem, TaskList } from "@tiptap/extension-list"
 import { Placeholder } from "@tiptap/extensions"
-import {
-  DragHandlePlugin,
-  defaultComputePositionConfig,
-  dragHandlePluginDefaultKey,
-} from "@tiptap/extension-drag-handle"
 import { NodeRangeSelection } from "@tiptap/extension-node-range"
 import { autoUpdate, computePosition, flip, offset, shift } from "@floating-ui/dom"
 import { Image } from "@/components/minimal-tiptap/extensions/image"
@@ -287,6 +282,36 @@ const topLevelFromPoint = (view: Editor["view"], x: number, y: number) => {
   return null
 }
 
+const blockDomAt = (view: Editor["view"], pos: number) => {
+  const dom = view.nodeDOM(pos)
+  return dom instanceof HTMLElement ? dom : null
+}
+
+const topLevelFromClientY = (view: Editor["view"], clientY: number) => {
+  let match: { pos: number; size: number; dom: HTMLElement } | null = null
+  view.state.doc.forEach((node, offset) => {
+    const dom = blockDomAt(view, offset)
+    if (!dom) return
+    const rect = dom.getBoundingClientRect()
+    if (clientY >= rect.top && clientY <= rect.bottom) {
+      match = { pos: offset, size: node.nodeSize, dom }
+    }
+  })
+  return match
+}
+
+const placeGutter = (element: HTMLElement, reference: HTMLElement) => {
+  const parent = element.offsetParent
+  if (!(parent instanceof HTMLElement)) return
+  const parentRect = parent.getBoundingClientRect()
+  const refRect = reference.getBoundingClientRect()
+  const gap = 4
+  const left = refRect.left - parentRect.left - element.offsetWidth - gap
+  const top = refRect.top - parentRect.top
+  element.style.left = `${Math.max(0, left)}px`
+  element.style.top = `${Math.max(0, top)}px`
+}
+
 const BlockGutter = ({
   editor,
   onAdd,
@@ -300,6 +325,7 @@ const BlockGutter = ({
   const [blockPos, setBlockPos] = React.useState(-1)
   const [moveMenu, setMoveMenu] = React.useState<{ top: number; left: number } | null>(null)
   const posRef = React.useRef(-1)
+  const lockedRef = React.useRef(false)
   const addPressed = React.useRef(false)
   const pointerRef = React.useRef<{ x: number; y: number } | null>(null)
   const onAddRef = React.useRef(onAdd)
@@ -310,7 +336,14 @@ const BlockGutter = ({
   const canMoveDown = Boolean(currentBlock && currentBlock.index < blockCount - 1)
 
   React.useEffect(() => {
+    lockedRef.current = Boolean(moveMenu)
+    if (moveMenu && element) element.style.visibility = "visible"
+  }, [element, moveMenu])
+
+  React.useEffect(() => {
     if (!element || editor.isDestroyed) return
+
+    element.draggable = true
 
     const cancelAddDrag = (event: DragEvent) => {
       if (!addPressed.current) return
@@ -346,45 +379,88 @@ const BlockGutter = ({
       dragSourceRef.current = null
     }
 
+    const hide = () => {
+      if (lockedRef.current) return
+      element.style.visibility = "hidden"
+      posRef.current = -1
+      setBlockPos(-1)
+    }
+
+    const showFor = (hit: { pos: number; dom: HTMLElement }) => {
+      posRef.current = hit.pos
+      setBlockPos(hit.pos)
+      element.style.visibility = "visible"
+      placeGutter(element, hit.dom)
+    }
+
+    const resolveHit = (clientX: number, clientY: number, target: EventTarget | null) => {
+      if (target instanceof Node && element.contains(target)) {
+        const current = posRef.current
+        if (current < 0) return null
+        const dom = blockDomAt(editor.view, current)
+        return dom ? { pos: current, size: 0, dom } : null
+      }
+
+      return (
+        topLevelFromPoint(editor.view, clientX, clientY) ??
+        topLevelFromClientY(editor.view, clientY)
+      )
+    }
+
+    const onPointerMove = (event: MouseEvent) => {
+      if (lockedRef.current || editor.isDestroyed) return
+      const wrapper = element.parentElement
+      if (!wrapper) return
+      const bounds = wrapper.getBoundingClientRect()
+      const inside =
+        event.clientX >= bounds.left &&
+        event.clientX <= bounds.right &&
+        event.clientY >= bounds.top &&
+        event.clientY <= bounds.bottom
+      if (!inside && !(event.target instanceof Node && element.contains(event.target))) {
+        hide()
+        return
+      }
+
+      const hit = resolveHit(event.clientX, event.clientY, event.target)
+      if (!hit) {
+        hide()
+        return
+      }
+      showFor(hit)
+    }
+
+    const onScrollOrResize = () => {
+      if (lockedRef.current || editor.isDestroyed) return
+      const pos = posRef.current
+      if (pos < 0) return
+      const dom = blockDomAt(editor.view, pos)
+      if (!dom) {
+        hide()
+        return
+      }
+      placeGutter(element, dom)
+    }
+
     element.addEventListener("dragstart", cancelAddDrag, true)
     element.addEventListener("dragstart", rememberSource, true)
-    element.addEventListener("dragend", clearSource)
-    const plugin = DragHandlePlugin({
-      pluginKey: dragHandlePluginDefaultKey,
-      editor,
-      element,
-      computePositionConfig: {
-        ...defaultComputePositionConfig,
-        placement: "left-start",
-        strategy: "absolute",
-      },
-      onNodeChange: ({ pos }) => {
-        posRef.current = pos
-        setBlockPos(pos)
-      },
-    })
     element.addEventListener("dragstart", ensureDragData)
-    editor.registerPlugin(plugin.plugin)
+    element.addEventListener("dragend", clearSource)
+    document.addEventListener("mousemove", onPointerMove)
+    window.addEventListener("scroll", onScrollOrResize, true)
+    window.addEventListener("resize", onScrollOrResize)
 
     return () => {
       element.removeEventListener("dragstart", cancelAddDrag, true)
       element.removeEventListener("dragstart", rememberSource, true)
       element.removeEventListener("dragstart", ensureDragData)
       element.removeEventListener("dragend", clearSource)
-      editor.unregisterPlugin(dragHandlePluginDefaultKey)
-      plugin.unbind()
+      document.removeEventListener("mousemove", onPointerMove)
+      window.removeEventListener("scroll", onScrollOrResize, true)
+      window.removeEventListener("resize", onScrollOrResize)
+      element.draggable = false
     }
   }, [dragSourceRef, editor, element])
-
-  React.useEffect(() => {
-    if (!moveMenu || editor.isDestroyed) return
-    editor.view.dispatch(editor.state.tr.setMeta("lockDragHandle", true))
-    if (element) element.style.visibility = "visible"
-    return () => {
-      if (editor.isDestroyed) return
-      editor.view.dispatch(editor.state.tr.setMeta("lockDragHandle", false))
-    }
-  }, [editor, element, moveMenu])
 
   React.useEffect(() => {
     if (!moveMenu) return
@@ -524,6 +600,7 @@ const BlockGutter = ({
     </div>
   )
 }
+
 
 const seed = {
   type: "doc",
